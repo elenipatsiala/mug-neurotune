@@ -1,0 +1,32 @@
+{
+  "hypoxia": {
+    "target": "maturation",
+    "covariate": "hypoxia",
+    "within_strata_r": 0.3177743080083908,
+    "slope": 0.15496727028766116,
+    "g_raw": 0.8272997315004056,
+    "g_adjusted": 0.6324749320046342,
+    "share_explained": 0.23549481775176406,
+    "verdict": "effect largely independent of hypoxia score"
+  },
+  "stress_glycolysis": {
+    "target": "maturation",
+    "covariate": "stress_glycolysis",
+    "within_strata_r": 0.6780841174354832,
+    "slope": 0.6300723865095047,
+    "g_raw": 0.8272997315004056,
+    "g_adjusted": 0.172719165714656,
+    "share_explained": 0.7912254058134294,
+    "verdict": "hypoxia explains most of the effect"
+  },
+  "hypoxia+glycolysis": {
+    "target": "maturation",
+    "covariate": "hyp_plus_glyc",
+    "within_strata_r": 0.4611964581627199,
+    "slope": 0.15397812927154902,
+    "g_raw": 0.8272997315004056,
+    "g_adjusted": 0.493255606110507,
+    "share_explained": 0.4037764218587019,
+    "verdict": "effect largely independent of hypoxia score"
+  }
+}

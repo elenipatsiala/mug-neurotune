@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mug-neurotune"
-version = "0.1.0"
+version = "0.2.0"
 description = "Validated maturation / dopaminergic-fidelity / stress scorecard for human midbrain organoids, with a spaceflight (LEO vs ground) module and an organoid oxygen-transport model."
 readme = "README.md"
 license = {text = "MIT"}
@@ -19,3 +19,6 @@ mugnt = "mug_neurotune.cli:main"
 
 [tool.setuptools]
 packages = ["mug_neurotune", "o2model"]
+
+[tool.setuptools.package-data]
+mug_neurotune = ["data/*.json"]

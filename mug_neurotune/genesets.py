@@ -23,7 +23,10 @@ GENESETS: dict[str, dict] = {
     # ------------------------------------------------------------------ axis 1
     "maturation": {
         "role": "axis",
-        "description": "Pan-neuronal maturation: synaptic machinery, cytoskeleton of "
+        "description": "[v0.2: NOT VALIDATED as a maturity clock - failed Step A on Fiorenzano "
+                       "2021 (rho = -0.16 whole organoid, 0.41 neurons only); kept as a descriptive "
+                       "synaptic-marker score. Use 'age_clock' (mug_neurotune/clock.py).] "
+                       "Pan-neuronal maturation: synaptic machinery, cytoskeleton of "
                        "post-mitotic neurons, mature ion channels. Deliberately excludes "
                        "dopaminergic genes so maturation and DA identity stay independent.",
         "source": "Synaptic/neuronal maturation genes used to stage brain organoids "

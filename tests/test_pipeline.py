@@ -108,3 +108,56 @@ def test_E_variance_components_reasonable():
     sc = scoring.score_all(io.log_cpm(c))
     vc = power.variance_components(sc["maturation"], meta)
     assert vc["beta"] > 0 and vc["sd_organoid"] > 0
+
+
+def test_id_detection_and_clear_error(tmp_path):
+    import pytest
+    c, _ = synthetic.timecourse(reps=1)
+    ens = c.copy()
+    ens.index = [f"ENSG{i:011d}" for i in range(len(c))]
+    p = tmp_path / "ens.csv"
+    ens.to_csv(p)
+    assert io.detect_id_type(ens.index) == "ensembl"
+    with pytest.raises(ValueError, match="ensembl"):
+        io.load_counts(str(p))
+
+
+def test_pseudobulk_roundtrip(tmp_path):
+    import scipy.io, scipy.sparse
+    rng = np.random.default_rng(0)
+    m = scipy.sparse.random(50, 30, density=0.3, random_state=0, data_rvs=lambda n: rng.integers(1, 5, n)).tocoo()
+    d = tmp_path / "tenx"
+    d.mkdir()
+    scipy.io.mmwrite(str(d / "matrix.mtx"), m)
+    pd.DataFrame({"id": [f"g{i}" for i in range(50)], "sym": [f"G{i}" for i in range(50)]}).to_csv(d / "features.tsv", sep="\t", header=False, index=False)
+    bcs = [f"c{i}" for i in range(30)]
+    pd.Series(bcs).to_csv(d / "barcodes.tsv", header=False, index=False)
+    groups = pd.Series(["A"] * 15 + ["B"] * 15, index=bcs)
+    pb = io.pseudobulk_10x(str(d), groups).reindex([f"G{i}" for i in range(50)])
+    dense = m.toarray()
+    assert np.allclose(pb["A"].values, dense[:, :15].sum(1)) and np.allclose(pb["B"].values, dense[:, 15:].sum(1))
+
+
+def test_clock_frozen_and_aliases():
+    from mug_neurotune import clock
+    ck = clock.load_clock()
+    assert len(ck["up"]) == 50 and len(ck["down"]) == 50 and not set(ck["up"]) & set(ck["down"])
+    idx = pd.Index(["ATP5MJ", "H3-3A"])
+    assert clock._resolve(["ATP5MPL", "H3F3A"], idx) == ["ATP5MJ", "H3-3A"]
+
+
+def test_clock_nan_when_genes_absent():
+    from mug_neurotune import clock
+    c, _ = synthetic.timecourse(reps=1)   # synthetic data has no clock genes
+    sc = clock.clock_score(io.log_cpm(c))
+    assert sc["age_clock"].isna().all()
+
+
+def test_score_all_adds_clock_when_genes_present():
+    from mug_neurotune import clock
+    ck = clock.load_clock()
+    rng = np.random.default_rng(0)
+    genes = sorted({g for v in genesets.gene_lists().values() for g in v} | set(ck["up"]) | set(ck["down"])) \
+        + [f"BG{i}" for i in range(2000)]
+    c = pd.DataFrame(rng.poisson(50, (len(genes), 4)), index=genes, columns=list("abcd"))
+    assert "age_clock" in scoring.score_all(io.log_cpm(c)).columns

@@ -68,12 +68,19 @@ def coverage(logcpm: pd.DataFrame, sets: dict[str, list[str]] | None = None) -> 
 
 def score_all(logcpm: pd.DataFrame, method: str = "rank",
               sets: dict[str, list[str]] | None = None) -> pd.DataFrame:
-    """Return samples x programs score table, plus derived 'fidelity'."""
+    """Return samples x programs score table, plus derived 'fidelity' and (when the clock
+    genes are present) the validated neuronal 'age_clock'."""
+    default_sets = sets is None
     sets = sets or gene_lists()
     fn = METHODS[method]
     out = pd.DataFrame({name: fn(logcpm, genes) for name, genes in sets.items()})
     if "da_identity" in out and "off_target" in out:
         out["fidelity"] = out["da_identity"] - out["off_target"]
+    if method == "rank" and default_sets:
+        from .clock import clock_score
+        ck = clock_score(logcpm)
+        if ck["age_clock"].notna().all():
+            out["age_clock"] = ck["age_clock"]
     return out
 
 

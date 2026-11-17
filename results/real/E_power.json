@@ -1,0 +1,122 @@
+{
+ "glycolysis_observed": {
+  "beta": 0.010890974911124757,
+  "sd_organoid": 0.004532195784400357,
+  "sd_donor": 0.006298602791471532,
+  "sd_donor_x_cond": 0.0,
+  "n_donors_used": 2,
+  "note": "with <=2 donors, donor-level SDs are extremely uncertain; power grid therefore sweeps sd_donor_x_cond as a ratio of sd_organoid"
+ },
+ "glycolysis_minimal": [
+  {
+   "dxc_ratio": 0.0,
+   "n_donors": 4,
+   "organoids_per_donor_per_arm": 2,
+   "total_organoids_flown": 8,
+   "power": 0.88075
+  },
+  {
+   "dxc_ratio": 0.5,
+   "n_donors": 4,
+   "organoids_per_donor_per_arm": 2,
+   "total_organoids_flown": 8,
+   "power": 0.81175
+  },
+  {
+   "dxc_ratio": 1.0,
+   "n_donors": 6,
+   "organoids_per_donor_per_arm": 2,
+   "total_organoids_flown": 12,
+   "power": 0.91125
+  }
+ ],
+ "clock_observed": {
+  "beta": 0.00042200429053021113,
+  "sd_organoid": 0.0030929034372122167,
+  "sd_donor": 0.0,
+  "sd_donor_x_cond": 0.0,
+  "n_donors_used": 2,
+  "note": "with <=2 donors, donor-level SDs are extremely uncertain; power grid therefore sweeps sd_donor_x_cond as a ratio of sd_organoid"
+ },
+ "clock_minimal": {
+  "7": [
+   {
+    "dxc_ratio": 0.0,
+    "n_donors": 6,
+    "organoids_per_donor_per_arm": 4,
+    "total_organoids_flown": 24,
+    "power": 0.8235,
+    "effect_days": 7
+   },
+   {
+    "dxc_ratio": 0.5,
+    "n_donors": 12,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 24,
+    "power": 0.83725,
+    "effect_days": 7
+   },
+   {
+    "dxc_ratio": 1.0,
+    "n_donors": 12,
+    "organoids_per_donor_per_arm": 8,
+    "total_organoids_flown": 96,
+    "power": 0.83725,
+    "effect_days": 7
+   }
+  ],
+  "14": [
+   {
+    "dxc_ratio": 0.0,
+    "n_donors": 6,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 12,
+    "power": 0.9845,
+    "effect_days": 14
+   },
+   {
+    "dxc_ratio": 0.5,
+    "n_donors": 6,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 12,
+    "power": 0.95525,
+    "effect_days": 14
+   },
+   {
+    "dxc_ratio": 1.0,
+    "n_donors": 6,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 12,
+    "power": 0.82925,
+    "effect_days": 14
+   }
+  ],
+  "28": [
+   {
+    "dxc_ratio": 0.0,
+    "n_donors": 3,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 6,
+    "power": 0.923,
+    "effect_days": 28
+   },
+   {
+    "dxc_ratio": 0.5,
+    "n_donors": 3,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 6,
+    "power": 0.88,
+    "effect_days": 28
+   },
+   {
+    "dxc_ratio": 1.0,
+    "n_donors": 4,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 8,
+    "power": 0.96675,
+    "effect_days": 28
+   }
+  ]
+ },
+ "clock_sd_in_days": 6.627650222597608
+}

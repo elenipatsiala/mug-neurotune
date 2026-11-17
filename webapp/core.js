@@ -63,9 +63,14 @@
 
   // Background-referenced rank score (matches scoring.py): each program gene is ranked
   // against genes that belong to NO program, so one program rising cannot drag others down.
-  function scoreAll(c, genesets) {
+  function scoreAll(c, genesets, clock) {
     const L = logCPM(c), gi = new Map(c.genes.map((g, i) => [g, i]));
     const programGenes = new Set(Object.values(genesets).flatMap(d => d.genes));
+    let ckUp = [], ckDown = [];
+    if (clock) {
+      const res = g => gi.has(g) ? g : (clock.aliases[g] && gi.has(clock.aliases[g]) ? clock.aliases[g] : null);
+      ckUp = clock.up.map(res).filter(Boolean); ckDown = clock.down.map(res).filter(Boolean);
+    }
     let bgIdx = c.genes.map((g, i) => programGenes.has(g) ? -1 : i).filter(i => i >= 0);
     if (bgIdx.length < 100) bgIdx = c.genes.map((_, i) => i);
     const n = c.samples.length;
@@ -83,6 +88,16 @@
     }
     if (scores.da_identity && scores.off_target)
       scores.fidelity = scores.da_identity.map((v, j) => v - scores.off_target[j]);
+    if (clock) {
+      coverage.age_clock = { n: clock.up.length + clock.down.length, present: ckUp.length + ckDown.length, missing: [] };
+      if (ckUp.length >= 0.8 * clock.up.length && ckDown.length >= 0.8 * clock.down.length) {
+        const ex = new Set([...programGenes, ...ckUp, ...ckDown]);
+        const bIdx = c.genes.map((g, i) => ex.has(g) ? -1 : i).filter(i => i >= 0);
+        const bg2 = [...Array(n).keys()].map(j => bIdx.map(i => L[i][j]).sort((a, b) => a - b));
+        const mr = (genes, j) => genes.reduce((s2, g) => { const v = L[gi.get(g)][j], r = bg2[j]; return s2 + (lowerBound(r, v) + upperBound(r, v)) / 2 / r.length; }, 0) / genes.length;
+        scores.age_clock = c.samples.map((_, j) => mr(ckUp, j) - mr(ckDown, j));
+      }
+    }
     return { scores, coverage };
   }
 

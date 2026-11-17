@@ -1,0 +1,31 @@
+{
+  "classification": "insufficient evidence",
+  "reason": "No robust increase on the maturation axis (age_clock).",
+  "maturation_axis": "age_clock",
+  "adjusted_tests": {
+    "hypoxia": {
+      "target": "age_clock",
+      "covariate": "hypoxia",
+      "within_strata_r": 0.2938127795057477,
+      "slope": 0.061012290630524886,
+      "g_raw": -0.0013268786909861182,
+      "g_adjusted": -0.17977878175767087,
+      "share_explained": -134.4899908928839,
+      "verdict": "effect largely independent of hypoxia score"
+    },
+    "stress_glycolysis": {
+      "target": "age_clock",
+      "covariate": "stress_glycolysis",
+      "within_strata_r": 0.40893066543259543,
+      "slope": 0.16180129788966965,
+      "g_raw": -0.0013268786909861182,
+      "g_adjusted": -0.49614277882155033,
+      "share_explained": -372.917210512156,
+      "verdict": "effect largely independent of hypoxia score"
+    }
+  },
+  "rank_vs_z_sign_agreement": 0.8181818181818182,
+  "maturation_logo_sign_flips": 0,
+  "geneset_version": "0.1.0",
+  "geneset_fingerprint": "ce3ab2617ac2602c"
+}

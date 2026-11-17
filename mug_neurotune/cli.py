@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 
+import numpy as np
 import pandas as pd
 
 from . import anchor, compare, genesets, io, plots, power, scoring, validate
@@ -68,15 +69,17 @@ def run_compare(lc, meta, out, n_perm=5000, n_boot=2000):
     res.to_csv(os.path.join(out, "leo_vs_ground.csv"))
     sens = compare.compare_programs(scoring.score_all(lc, "z"), meta, n_perm=n_perm // 5, n_boot=n_boot // 4)
     sens.to_csv(os.path.join(out, "leo_vs_ground_zscore_sensitivity.csv"))
-    adj = compare.hypoxia_adjusted(sc, meta)
+    target = "age_clock" if "age_clock" in sc.columns else "maturation"
+    adj = {cov: compare.hypoxia_adjusted(sc, meta, target=target, covariate=cov)
+           for cov in ("hypoxia", "stress_glycolysis")}
     label, why = compare.classify(res)
     logo = scoring.leave_one_gene_out(lc, "maturation", meta.loc[lc.columns, "condition"].astype(str),
                                       "ground", "LEO")
     logo.to_csv(os.path.join(out, "maturation_leave_one_gene_out.csv"), index=False)
     plots.maturation_fidelity_map(sc, meta.loc[sc.index], os.path.join(out, "maturation_fidelity_map.png"))
-    summary = {"classification": label, "reason": why, "hypoxia_adjusted": adj,
-               "rank_vs_z_sign_agreement": float((pd.Series(res.hedges_g).apply(lambda x: x > 0)
-                                                  == pd.Series(sens.hedges_g).apply(lambda x: x > 0)).mean()),
+    summary = {"classification": label, "reason": why, "maturation_axis": target, "adjusted_tests": adj,
+               "rank_vs_z_sign_agreement": float((np.sign(res.hedges_g.reindex(sens.index))
+                                                  == np.sign(sens.hedges_g)).mean()),
                "maturation_logo_sign_flips": int(logo.sign_flip.sum()),
                "geneset_version": genesets.GENESET_VERSION, "geneset_fingerprint": genesets.fingerprint()}
     with open(os.path.join(out, "summary.json"), "w") as fh:
@@ -84,9 +87,21 @@ def run_compare(lc, meta, out, n_perm=5000, n_boot=2000):
     return res, summary
 
 
+def _subset_to_meta(lc, meta_path):
+    """Use exactly the samples listed in the metadata; report anything left out."""
+    meta = io.load_metadata(meta_path)
+    shared = [s for s in meta.index if s in lc.columns]
+    not_in_counts = [s for s in meta.index if s not in lc.columns]
+    if not_in_counts:
+        print(f"[mugnt] WARNING: {len(not_in_counts)} metadata samples have no counts: {not_in_counts[:5]}")
+    print(f"[mugnt] using {len(shared)} samples listed in metadata "
+          f"({lc.shape[1] - len(shared)} other count columns ignored)")
+    return lc[shared], meta.loc[shared]
+
+
 def cmd_compare(a):
     lc, _ = _prep(a.counts, a.annotation)
-    meta = io.load_metadata(a.meta, list(lc.columns))
+    lc, meta = _subset_to_meta(lc, a.meta)
     res, summary = run_compare(lc, meta, a.out)
     print(res.round(3))
     print(json.dumps(summary, indent=2, default=float))
@@ -109,10 +124,25 @@ def run_power(lc, meta, out, program="maturation"):
 
 def cmd_power(a):
     lc, _ = _prep(a.counts, a.annotation)
-    meta = io.load_metadata(a.meta, list(lc.columns))
+    lc, meta = _subset_to_meta(lc, a.meta)
     vc, grid = run_power(lc, meta, a.out, a.program)
     print(json.dumps(vc, indent=2))
     print(power.minimal_design(grid))
+
+
+def cmd_pseudobulk(a):
+    """Single-cell -> one profile per organoid/sample, comparable with bulk RNA-seq.
+
+    MTX_DIR: 10x-style folder (matrix.mtx, features.tsv, barcodes.tsv). From Seurat use
+    DropletUtils::write10xCounts or Seurat's 'write10xCounts'; from Scanpy use
+    scanpy.external / sc.write_10x... or adata.write_csvs.
+    --cells: CSV with columns barcode,sample.
+    """
+    cells = pd.read_csv(a.cells)
+    pb = io.pseudobulk_10x(a.counts, cells.set_index(cells.columns[0])[cells.columns[1]].astype(str))
+    pb.index.name = "gene"
+    pb.to_csv(a.out)
+    print(f"[mugnt] pseudobulk: {pb.shape[0]} genes x {pb.shape[1]} samples -> {a.out}")
 
 
 def cmd_demo(a):
@@ -161,6 +191,11 @@ def main(argv=None):
     add("compare", cmd_compare, [(("--meta",), {"required": True})])
     add("power", cmd_power, [(("--meta",), {"required": True}), (("--program",), {"default": "maturation"})])
     add("demo", cmd_demo)
+    sp = sub.add_parser("pseudobulk", help="single-cell 10x folder -> per-sample counts CSV")
+    sp.add_argument("counts", help="10x folder")
+    sp.add_argument("--cells", required=True, help="CSV: barcode,sample")
+    sp.add_argument("--out", required=True, help="output CSV")
+    sp.set_defaults(fn=cmd_pseudobulk)
     a = p.parse_args(argv)
     a.fn(a)
 

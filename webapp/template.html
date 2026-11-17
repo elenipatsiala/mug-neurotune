@@ -59,7 +59,7 @@ a{color:var(--leo)}
 <header>
   <div>
     <h1>µG-NeuroTune <span>Scorecard</span></h1>
-    <p class="sub">Is your midbrain organoid really maturing, or just stressed? Upload an RNA-seq count table and get a <b>Maturation · Dopaminergic fidelity · Stress/Hypoxia</b> profile per organoid. Add metadata to compare conditions (e.g. ISS vs ground).</p>
+    <p class="sub">Is your midbrain organoid really maturing, or just stressed? Upload an RNA-seq count table and get a <b>Neuronal age · Dopaminergic fidelity · Stress/Hypoxia</b> profile per organoid. Add metadata to compare conditions (e.g. ISS vs ground).</p>
   </div>
   <div class="badge" id="gsBadge">gene sets v— · —</div>
 </header>
@@ -76,8 +76,8 @@ a{color:var(--leo)}
   </div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px;justify-content:center">
     <div class="row"><label class="note">reference</label><input id="refC" value="ground" class="mono" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:8px"><label class="note">test</label><input id="testC" value="LEO" class="mono" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:8px"></div>
-    <div class="row"><button id="runBtn" disabled>Score</button><button class="ghost" id="demoBtn">Load demo data</button></div>
-    <div class="note" id="status">Demo = synthetic ISS-like data with a planted hypoxia-driven "maturation" signal (not real results).</div>
+    <div class="row"><button id="runBtn" disabled>Score</button><button class="ghost" id="demoBtn">Try it on NASA ISS data</button></div>
+    <div class="note" id="status">Demo = real public data: dopaminergic organoids flown on the ISS vs ground controls (Marotta et al. 2024, GEO GSE259421; genes with mean count ≥ 5).</div>
   </div>
 </div>
 
@@ -85,7 +85,7 @@ a{color:var(--leo)}
   <h2>2 · Verdict</h2>
   <div class="verdict" id="verdict"></div>
 
-  <h2>3 · Maturation–Fidelity map</h2>
+  <h2>3 · Age–Fidelity map</h2>
   <div class="two">
     <div class="card"><div id="map"></div></div>
     <div class="card" id="effectsCard">
@@ -107,10 +107,10 @@ a{color:var(--leo)}
 
 <h2>How it works</h2>
 <details><summary>What each score means</summary>
-<p><b>Maturation</b>: pan-neuronal synaptic/cytoskeletal maturation genes, kept separate from dopaminergic genes. <b>DA identity</b>: midbrain floor-plate TFs + dopamine synthesis/handling. <b>Fidelity</b> subtracts non-midbrain (forebrain/hindbrain) identity. <b>Stress</b>: glycolysis and ER-stress programs typical of stressed organoid cells (Bhaduri 2020; Gruffi, Vértesy 2022). <b>Hypoxia</b>: HIF targets, with glycolytic enzymes excluded so hypoxia is not double-counted. All sets are non-overlapping and frozen before analysing the ISS data.</p>
+<p><b>Age clock ✓</b> (the maturation axis): 50 genes that rise and 50 that fall as human fetal midbrain neurons age (6–11.5 weeks post-conception; GSE192405), learned on fetal tissue only and then tested blind on an independent organoid time-course (days 15–120; GSE168323): Spearman ρ = 0.91 (95% CI 0.71–0.96) on whole organoids, 0.84 on neurons only. <b>Synaptic markers</b> is the v0.1 marker set; it failed that same test (ρ = −0.16), so it is shown for description only and never drives the verdict. <b>DA identity</b>: midbrain floor-plate TFs + dopamine synthesis/handling. <b>Fidelity</b> subtracts non-midbrain (forebrain/hindbrain) identity. <b>Stress</b>: glycolysis and ER-stress programs typical of stressed organoid cells (Bhaduri 2020; Gruffi, Vértesy 2022). <b>Hypoxia</b>: HIF targets, with glycolytic enzymes excluded so hypoxia is not double-counted. All sets are non-overlapping and frozen before analysing the ISS data.</p>
 <p><b>Scoring</b>: within each sample, each program gene is ranked against <i>background</i> genes (genes in no program); a program's score is the mean of those ranks − 0.5. Ranking against background only means one program rising cannot drag the others down. Scores ignore library size and work on bulk RNA-seq and single-cell pseudobulk alike.</p></details>
 <details><summary>Verdict rules (pre-registered)</summary>
-<p><b>Promising maturation</b>: maturation up (g ≥ 0.5), identity/fidelity not down, no stress program up. <b>Mixed state</b>: maturation up together with a stress/hypoxia program. <b>Dysregulated</b>: maturation up but DA identity or fidelity down (g ≤ −0.5). <b>Insufficient evidence</b>: no robust maturation increase. Every call also requires FDR q &lt; 0.05 (within-stratum permutation test) and the same direction in every cell line; the Python package additionally requires a bootstrap CI excluding 0.</p></details>
+<p><b>Promising maturation</b>: age clock up (g ≥ 0.5), identity/fidelity not down, no stress program up. <b>Mixed state</b>: maturation up together with a stress/hypoxia program. <b>Dysregulated</b>: maturation up but DA identity or fidelity down (g ≤ −0.5). <b>Insufficient evidence</b>: no robust maturation increase. Every call also requires FDR q &lt; 0.05 (within-stratum permutation test) and the same direction in every cell line; the Python package additionally requires a bootstrap CI excluding 0.</p></details>
 <details><summary>Gene sets</summary><div id="gsList" class="mono" style="font-size:12px"></div></details>
 <footer>µG-NeuroTune v0.1 · open-source Python package + this scorecard · built on NASA spaceflight organoid data (Marotta et al. 2024, <i>Stem Cells Transl Med</i>, GEO GSE259421). Scores describe transcription only: they are not functional maturity.</footer>
 </div>
@@ -118,11 +118,10 @@ a{color:var(--leo)}
 <script>/*CORE*/</script>
 <script>
 const GS = /*GENESETS*/;
-const DEMO_COUNTS = /*DEMO_COUNTS*/;
-const DEMO_META = /*DEMO_META*/;
+const CLOCK = /*CLOCK*/;
 const SETS = GS.genesets;
-const KEY = ["maturation","da_identity","fidelity","progenitor_cycle","stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive","off_target","microglia_qc"];
-const PRETTY = {maturation:"Maturation",da_identity:"DA identity",fidelity:"Fidelity",progenitor_cycle:"Progenitor / cycle",stress_glycolysis:"Glycolytic stress",stress_er:"ER stress",hypoxia:"Hypoxia",p53_dna_damage:"p53 / DNA damage",glial_reactive:"Reactive glia",off_target:"Off-target region",microglia_qc:"Microglia (QC)"};
+const KEY = ["age_clock","maturation","da_identity","fidelity","progenitor_cycle","stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive","off_target","microglia_qc"];
+const PRETTY = {age_clock:"Age clock ✓",maturation:"Synaptic markers",da_identity:"DA identity",fidelity:"Fidelity",progenitor_cycle:"Progenitor / cycle",stress_glycolysis:"Glycolytic stress",stress_er:"ER stress",hypoxia:"Hypoxia",p53_dna_damage:"p53 / DNA damage",glial_reactive:"Reactive glia",off_target:"Off-target region",microglia_qc:"Microglia (QC)"};
 let countsText=null, metaText=null, last=null;
 document.getElementById("gsBadge").textContent=`gene sets v${GS.version} · ${GS.fingerprint}`;
 document.getElementById("gsList").innerHTML=Object.entries(SETS).map(([k,v])=>`<p><b>${k}</b> (${v.role}) — ${v.genes.join(", ")}<br><span class="note">${v.source}</span></p>`).join("");
@@ -139,9 +138,16 @@ function wire(dropId,fileId,setter){
 wire("dropCounts","fileCounts",t=>countsText=t);
 wire("dropMeta","fileMeta",t=>metaText=t);
 function ready(){document.getElementById("runBtn").disabled=!countsText;}
-document.getElementById("demoBtn").onclick=()=>{countsText=DEMO_COUNTS;metaText=DEMO_META;
-  for(const [id,n] of [["dropCounts","demo_counts.csv (synthetic)"],["dropMeta","demo_meta.csv"]]){const d=document.getElementById(id);d.classList.add("done");d.querySelector("small").textContent=n;}
-  ready();run();};
+document.getElementById("demoBtn").onclick=async()=>{
+  const st=document.getElementById("status"); st.textContent="Loading NASA ISS organoid data…";
+  try{
+    const [a,b]=await Promise.all([fetch("iss_DA_counts.csv"),fetch("iss_DA_meta.csv")]);
+    if(!a.ok||!b.ok) throw new Error("demo files not found");
+    countsText=await a.text(); metaText=await b.text();
+    for(const [id,n] of [["dropCounts","GSE259421 · 18 dopaminergic organoids"],["dropMeta","ISS vs ground · 2 lines · ±microglia"]]){const d=document.getElementById(id);d.classList.add("done");d.querySelector("small").textContent=n;}
+    ready();run();
+  }catch(e){st.innerHTML=`<span class="err">Could not load the demo data (${e.message}).</span>`;}
+};
 document.getElementById("runBtn").onclick=run;
 
 function run(){
@@ -149,7 +155,7 @@ function run(){
   try{
     const c=MUGNT.parseCounts(countsText);
     if(c.samples.length<2||c.genes.length<200) throw new Error(`Found ${c.genes.length} genes × ${c.samples.length} samples. Need ≥200 genes and ≥2 samples (genes in rows).`);
-    const {scores,coverage}=MUGNT.scoreAll(c,SETS);
+    const {scores,coverage}=MUGNT.scoreAll(c,SETS,CLOCK);
     const meta=metaText?MUGNT.parseMeta(metaText):null;
     last={c,scores,coverage,meta};
     st.textContent=`Scored ${c.samples.length} samples over ${c.genes.length.toLocaleString()} genes.`;
@@ -192,8 +198,9 @@ function renderEffects(eff,ref,test){
 
 function classify(e){
   const up=k=>e[k]&&e[k].g>=0.5&&e[k].q<0.05&&e[k].consistent, down=k=>e[k]&&e[k].g<=-0.5&&e[k].q<0.05&&e[k].consistent;
+  const axis=e.age_clock&&isFinite(e.age_clock.g)?"age_clock":"maturation";
   const dys=["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(up);
-  if(!up("maturation")) return ["Insufficient evidence","t-ins","No robust maturation increase in the test condition."];
+  if(!up(axis)) return ["Insufficient evidence","t-ins",`No robust increase on the ${axis==="age_clock"?"validated neuronal age clock":"maturation marker score (age clock unavailable: clock genes missing)"}.`+(["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).length?` Changed programs: ${["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).map(k=>PRETTY[k]+(up(k)?" ↑":" ↓")).join(", ")}.`:"")];
   if(down("da_identity")||down("fidelity")) return ["Dysregulated state","t-dys","Maturation goes up, but dopaminergic identity / fidelity goes down."];
   if(dys.length) return ["Mixed state","t-mixed",`Maturation goes up <b>together with</b> ${dys.map(d=>PRETTY[d]).join(", ")}. Part of the "maturation" may be a stress or oxygen-limitation response: run the hypoxia-adjusted test.`];
   return ["Promising maturation","t-prom","Maturation up, dopaminergic identity preserved, no stress program up."];
@@ -207,7 +214,7 @@ function renderVerdict(eff){
 
 function renderMap(meta,ref,test){
   const {c,scores}=last, W=560,H=420,P={l:64,r:20,t:20,b:48};
-  const xs=scores.maturation, ys=scores.fidelity, hy=scores.hypoxia||xs.map(()=>0);
+  const xs=scores.age_clock||scores.maturation, ys=scores.fidelity, hy=scores.hypoxia||xs.map(()=>0);
   const ext=a=>{const f=a.filter(isFinite);const lo=Math.min(...f),hi=Math.max(...f),pad=(hi-lo||.1)*.12;return [lo-pad,hi+pad]};
   const [x0,x1]=ext(xs),[y0,y1]=ext(ys),[h0,h1]=[Math.min(...hy.filter(isFinite)),Math.max(...hy.filter(isFinite))];
   const X=v=>P.l+(v-x0)/(x1-x0)*(W-P.l-P.r), Y=v=>H-P.b-(v-y0)/(y1-y0)*(H-P.t-P.b);
@@ -216,9 +223,9 @@ function renderMap(meta,ref,test){
   const shape=(l,x,y)=>{const i=lines.indexOf(l)%3;return i===0?`<circle cx="${x}" cy="${y}" r="7"`:i===1?`<rect x="${x-6.5}" y="${y-6.5}" width="13" height="13"`:`<path d="M${x},${y-8}L${x+8},${y+6}L${x-8},${y+6}Z"`};
   let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Maturation versus fidelity map">`;
   for(let i=0;i<=4;i++){const yv=y0+(y1-y0)*i/4,xv=x0+(x1-x0)*i/4;
-    s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="#eee"/><text x="${P.l-8}" y="${Y(yv)+4}" font-size="13" text-anchor="end" fill="#5b6474">${yv.toFixed(2)}</text>`;
-    s+=`<text x="${X(xv)}" y="${H-P.b+18}" font-size="13" text-anchor="middle" fill="#5b6474">${xv.toFixed(2)}</text>`;}
-  s+=`<text x="${(W+P.l)/2}" y="${H-8}" font-size="14" text-anchor="middle" fill="#1c2230">Maturation score →</text><text transform="translate(14 ${(H-P.b)/2}) rotate(-90)" font-size="14" text-anchor="middle" fill="#1c2230">Dopaminergic fidelity →</text>`;
+    s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="#eee"/><text x="${P.l-8}" y="${Y(yv)+4}" font-size="13" text-anchor="end" fill="#5b6474">${yv.toFixed(Math.abs(y1-y0)<0.1?3:2)}</text>`;
+    s+=`<text x="${X(xv)}" y="${H-P.b+18}" font-size="13" text-anchor="middle" fill="#5b6474">${xv.toFixed(Math.abs(x1-x0)<0.1?3:2)}</text>`;}
+  s+=`<text x="${(W+P.l)/2}" y="${H-8}" font-size="14" text-anchor="middle" fill="#1c2230">${scores.age_clock?"Neuronal age clock":"Maturation score"} →</text><text transform="translate(14 ${(H-P.b)/2}) rotate(-90)" font-size="14" text-anchor="middle" fill="#1c2230">Dopaminergic fidelity →</text>`;
   c.samples.forEach((sm,j)=>{const m=meta?.bySample[sm]||{};const cond=m.condition;const stroke=cond===test?"#1d4ed8":cond===ref?"#64748b":"#1c2230";
     s+=`${shape(m.line||"all",X(xs[j]),Y(ys[j]))} fill="${fill(hy[j])}" stroke="${stroke}" stroke-width="2.4"><title>${sm} · ${cond||""} · ${m.line||""} ${m.microglia||""}\nmaturation ${fmt(xs[j])} · fidelity ${fmt(ys[j])} · hypoxia ${fmt(hy[j])}</title></${shape(m.line||"all",0,0).match(/<(\w+)/)[1]}>`;});
   if(meta){for(const [cond,col] of [[ref,"#64748b"],[test,"#1d4ed8"]]){const idx=c.samples.map((sm,j)=>meta.bySample[sm]?.condition===cond?j:-1).filter(j=>j>=0);if(!idx.length)continue;

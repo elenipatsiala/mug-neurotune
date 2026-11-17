@@ -6,9 +6,9 @@ with sync_playwright() as p:
     errs = []
     pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.on("console", lambda m: m.type == "error" and errs.append(m.text))
-    pg.goto("file://" + __import__("os").path.abspath("index.html"))
+    pg.goto("http://localhost:8765/index.html")
     pg.click("#demoBtn")
-    pg.wait_for_timeout(800)
+    pg.wait_for_timeout(6000)
     pg.screenshot(path=sys.argv[1], full_page=True)
     print("errors:", [e for e in errs if "fonts" not in e])
     print(pg.inner_text("#verdict"))

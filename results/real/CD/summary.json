@@ -1,0 +1,18 @@
+{
+  "classification": "insufficient evidence",
+  "reason": "Maturation increase is not robust (g < 0.5 or CI includes 0).",
+  "hypoxia_adjusted": {
+    "target": "maturation",
+    "covariate": "hypoxia",
+    "within_strata_r": 0.3177743080083908,
+    "slope": 0.15496727028766116,
+    "g_raw": 0.8272997315004056,
+    "g_adjusted": 0.6324749320046342,
+    "share_explained": 0.23549481775176406,
+    "verdict": "effect largely independent of hypoxia score"
+  },
+  "rank_vs_z_sign_agreement": 0.8181818181818182,
+  "maturation_logo_sign_flips": 0,
+  "geneset_version": "0.1.0",
+  "geneset_fingerprint": "ce3ab2617ac2602c"
+}

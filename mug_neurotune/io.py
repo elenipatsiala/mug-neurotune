@@ -10,7 +10,7 @@ import pandas as pd
 
 def _read_table(path: str) -> pd.DataFrame:
     sep = "," if path.endswith((".csv", ".csv.gz")) else "\t"
-    return pd.read_csv(path, sep=sep, index_col=0, comment="#")
+    return pd.read_csv(path, sep=sep, index_col=0, comment="#", low_memory=False)
 
 
 def load_counts(path: str, annotation: str | None = None,
@@ -24,6 +24,8 @@ def load_counts(path: str, annotation: str | None = None,
     Duplicate symbols are summed.
     """
     df = _read_table(path)
+    if annotation is None and not any(c in df.columns for c in ("gene_name", "Symbol", "symbol")):
+        check_ids(df, annotation_given=False)
     meta_cols = [c for c in ("Chr", "Start", "End", "Strand", "Length", "gene_name",
                              "Symbol", "symbol") if c in df.columns]
     if annotation is None and any(c in df.columns for c in ("gene_name", "Symbol", "symbol")):
@@ -31,6 +33,9 @@ def load_counts(path: str, annotation: str | None = None,
         df.index = df[col].astype(str)
     df = df.drop(columns=meta_cols, errors="ignore")
     df = df.apply(pd.to_numeric, errors="coerce").fillna(0)
+    if annotation == "bundled":
+        annotation = os.path.join(os.path.dirname(__file__), "data", "ensembl_to_symbol.tsv.gz")
+        symbol_col = "Symbol"
     if annotation is not None:
         ann = _read_table(annotation)
         if symbol_col not in ann.columns:
@@ -43,6 +48,28 @@ def load_counts(path: str, annotation: str | None = None,
     df.index = df.index.astype(str)
     df = df.groupby(level=0).sum()
     return df
+
+
+def detect_id_type(index) -> str:
+    """'ensembl', 'entrez' or 'symbol', from the first 500 row IDs."""
+    ids = pd.Index(index).astype(str)[:500]
+    if (ids.str.match(r"^ENS[A-Z]*G\d{6,}")).mean() > 0.8:
+        return "ensembl"
+    if ids.str.fullmatch(r"\d+").mean() > 0.8:
+        return "entrez"
+    return "symbol"
+
+
+def check_ids(counts: pd.DataFrame, annotation_given: bool) -> None:
+    """Fail early with a clear message instead of silently scoring zero genes."""
+    kind = detect_id_type(counts.index)
+    if kind != "symbol" and not annotation_given:
+        hint = ("GEO 'Download RNA-Seq counts' also offers Human.GRCh38.p13.annot.tsv.gz"
+                if kind == "entrez" else
+                "export Gene stable ID + HGNC symbol from Ensembl BioMart, or use mugnt's "
+                "bundled map once installed (mug_neurotune/data/ensembl_to_symbol.tsv.gz)")
+        raise ValueError(f"Row IDs look like {kind} IDs, but gene sets use HGNC symbols. "
+                         f"Pass --annotation with an ID->Symbol table ({hint}).")
 
 
 def load_metadata(path: str, samples: list[str] | None = None) -> pd.DataFrame:

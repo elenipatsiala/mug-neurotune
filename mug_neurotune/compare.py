@@ -179,7 +179,8 @@ def hypoxia_adjusted(scores: pd.DataFrame, meta: pd.DataFrame, target: str = "ma
     g_raw = stratified_effect(y, cond, strata, ref, test)
     g_adj = stratified_effect(resid, cond, strata, ref, test)
     r = float(np.corrcoef(xc, yc)[0, 1]) if xc.std() > 0 and yc.std() > 0 else np.nan
-    share = 1 - g_adj / g_raw if g_raw and not np.isnan(g_raw) and g_raw != 0 else np.nan
+    # share is only meaningful when there is a real raw effect to explain
+    share = 1 - g_adj / g_raw if np.isfinite(g_raw) and abs(g_raw) >= 0.2 else np.nan
     return {"target": target, "covariate": covariate, "within_strata_r": r,
             "slope": slope, "g_raw": g_raw, "g_adjusted": g_adj,
             "share_explained": share,
@@ -202,11 +203,15 @@ def classify(res: pd.DataFrame) -> tuple[str, str]:
         return (r is not None and r.hedges_g <= -G_MEANINGFUL and r.ci_high < 0 and r.q_bh < Q_MAX
                 and bool(r.get("consistent_lines", True)))
 
-    mat_up = up("maturation")
+    # v0.2: the maturation axis is the fetal-trained neuronal age clock (validated on an
+    # independent organoid time-course, rho = 0.91). The v0.1 'maturation' marker set failed
+    # that validation and is kept only as a descriptive synaptic-marker score.
+    axis = "age_clock" if "age_clock" in res.index and np.isfinite(res.loc["age_clock", "hedges_g"]) else "maturation"
+    mat_up = up(axis)
     fid_down = down("da_identity") or down("fidelity")
     dys_up = [p for p in DYSREGULATION if up(p)]
     if not mat_up:
-        return "insufficient evidence", "Maturation increase is not robust (g < 0.5 or CI includes 0)."
+        return "insufficient evidence", f"No robust increase on the maturation axis ({axis})."
     if fid_down:
         return "dysregulated state", "Maturation up but dopaminergic identity/fidelity down."
     if dys_up:
