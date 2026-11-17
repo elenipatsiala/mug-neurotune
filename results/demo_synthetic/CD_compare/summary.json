@@ -1,0 +1,18 @@
+{
+  "classification": "mixed state",
+  "reason": "Maturation up together with: hypoxia",
+  "hypoxia_adjusted": {
+    "target": "maturation",
+    "covariate": "hypoxia",
+    "within_strata_r": 0.9202608006990926,
+    "slope": 1.0401044666081276,
+    "g_raw": 2.8234300101456538,
+    "g_adjusted": 0.9489375683120463,
+    "share_explained": 0.6639061124581965,
+    "verdict": "hypoxia explains most of the effect"
+  },
+  "rank_vs_z_sign_agreement": 0.9090909090909091,
+  "maturation_logo_sign_flips": 0,
+  "geneset_version": "0.1.0",
+  "geneset_fingerprint": "ce3ab2617ac2602c"
+}

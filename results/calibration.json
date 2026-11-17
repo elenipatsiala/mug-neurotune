@@ -1,0 +1,113 @@
+{
+  "n_missions_per_truth": 200,
+  "design": "2 lines x MG+/- x ground/LEO x 3 organoids",
+  "cutoffs": {
+    "q<0.1": {
+      "null": {
+        "expected": "insufficient evidence",
+        "accuracy": 0.985,
+        "ci95": [
+          0.968,
+          1
+        ],
+        "labels": {
+          "dysregulated state": 1,
+          "insufficient evidence": 197,
+          "promising maturation": 2
+        }
+      },
+      "true_mat": {
+        "expected": "promising maturation",
+        "accuracy": 0.92,
+        "ci95": [
+          0.882,
+          0.958
+        ],
+        "labels": {
+          "dysregulated state": 4,
+          "mixed state": 12,
+          "promising maturation": 184
+        }
+      },
+      "hyp_driven": {
+        "expected": "mixed state",
+        "accuracy": 0.935,
+        "ci95": [
+          0.901,
+          0.969
+        ],
+        "labels": {
+          "dysregulated state": 1,
+          "insufficient evidence": 6,
+          "mixed state": 187,
+          "promising maturation": 6
+        }
+      },
+      "id_loss": {
+        "expected": "dysregulated state",
+        "accuracy": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ],
+        "labels": {
+          "dysregulated state": 200
+        }
+      },
+      "worst_case_accuracy": 0.92
+    },
+    "q<0.05": {
+      "null": {
+        "expected": "insufficient evidence",
+        "accuracy": 0.995,
+        "ci95": [
+          0.985,
+          1
+        ],
+        "labels": {
+          "dysregulated state": 1,
+          "insufficient evidence": 199
+        }
+      },
+      "true_mat": {
+        "expected": "promising maturation",
+        "accuracy": 0.955,
+        "ci95": [
+          0.926,
+          0.984
+        ],
+        "labels": {
+          "dysregulated state": 1,
+          "mixed state": 8,
+          "promising maturation": 191
+        }
+      },
+      "hyp_driven": {
+        "expected": "mixed state",
+        "accuracy": 0.925,
+        "ci95": [
+          0.888,
+          0.962
+        ],
+        "labels": {
+          "insufficient evidence": 9,
+          "mixed state": 185,
+          "promising maturation": 6
+        }
+      },
+      "id_loss": {
+        "expected": "dysregulated state",
+        "accuracy": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ],
+        "labels": {
+          "dysregulated state": 200
+        }
+      },
+      "worst_case_accuracy": 0.925
+    }
+  },
+  "selected_cutoff": "q<0.05"
+}

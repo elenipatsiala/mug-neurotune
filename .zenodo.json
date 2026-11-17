@@ -1,0 +1,11 @@
+{
+  "title": "µG-NeuroTune: a validated maturation, dopaminergic-fidelity and stress scorecard for human midbrain organoids",
+  "upload_type": "software",
+  "description": "Open-source scorecard that tells whether human midbrain organoids are genuinely maturing or showing stress/hypoxia-driven 'maturation-like' changes. Includes validation on known-age organoids, anchoring to human fetal ventral-midbrain development, a stratified LEO-vs-ground comparison with a hypoxia-adjusted test, a power calculator for future spaceflight experiments, an oxygen-transport model of the CRS-19 culture vial, and a browser scorecard.",
+  "license": "MIT",
+  "creators": [{"name": "YOUR-SURNAME, YOUR-GIVEN-NAME", "affiliation": "The Knowledge Society (TKS)"}],
+  "keywords": ["brain organoids", "midbrain organoids", "Parkinson's disease", "microgravity", "spaceflight", "NASA OSDR", "hypoxia", "transcriptomics"],
+  "related_identifiers": [
+    {"identifier": "10.1093/stcltm/szae070", "relation": "isSupplementTo", "scheme": "doi"}
+  ]
+}

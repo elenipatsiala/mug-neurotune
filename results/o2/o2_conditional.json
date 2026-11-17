@@ -1,0 +1,14 @@
+{
+ "n_consistent_with_paper_ground_normoxic": 184,
+ "P(ug >5% hypoxic | ground normoxic)": 0.14673913043478262,
+ "median ug hypoxic frac | ground normoxic": 0.0,
+ "max ug hypoxic frac | ground normoxic": 0.3713073730468748,
+ "P(ug surface O2 lower | ground normoxic)": 0.5380434782608695,
+ "median OCR amol/s in consistent set": 6.372099972456116,
+ "median n_cells in consistent set": 62630.17289665845,
+ "median radius in consistent set": 201.69769615109243,
+ "implied max per-organoid demand nmol/day (95th pct)": 73.01956127528416,
+ "near-threshold n": 139,
+ "P(ug worse | ground 5-30% hypoxic)": 0.41007194244604317,
+ "P(1g worse | near-threshold)": 0.3597122302158273
+}

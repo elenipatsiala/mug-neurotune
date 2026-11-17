@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>µG-NeuroTune Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F8F7F3;--card:#fff;--ink:#1c2230;--mute:#5b6474;--line:#e4e1d8;--leo:#1d4ed8;--gnd:#64748b;--warn:#c2410c;--ok:#15803d;--amber:#b45309}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:40px 24px 80px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:22px}
+h1{font-size:30px;letter-spacing:-.02em;margin:0 0 6px}
+h1 span{color:var(--leo)}
+.sub{color:var(--mute);max-width:640px;margin:0}
+.badge{font:500 12px/1 "JetBrains Mono",monospace;color:var(--mute);border:1px solid var(--line);padding:7px 10px;border-radius:999px;background:#fff}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin:36px 0 12px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.drop{border:1.5px dashed #cfcabc;border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:.15s;background:#fdfcf9}
+.drop:hover,.drop.over{border-color:var(--leo);background:#f3f6ff}
+.drop b{display:block;margin-bottom:4px}
+.drop small{color:var(--mute)}
+.drop.done{border-style:solid;border-color:var(--ok);background:#f2fbf5}
+button{font:600 14px Inter,sans-serif;border:0;border-radius:10px;padding:11px 16px;cursor:pointer;background:var(--ink);color:#fff}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mono{font-family:"JetBrains Mono",monospace;font-size:12.5px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute);font-size:12px;position:sticky;top:0;background:#fff}
+.scroll{max-height:420px;overflow:auto;border-radius:10px;border:1px solid var(--line)}
+.verdict{border-radius:14px;padding:18px 20px;border:1px solid var(--line);background:#fff;display:flex;gap:18px;align-items:flex-start}
+.verdict .tag{font:700 13px Inter;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.t-prom{background:#dcfce7;color:#166534}.t-mixed{background:#ffedd5;color:#9a3412}.t-dys{background:#fee2e2;color:#991b1b}.t-ins{background:#eef0f3;color:#475569}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:4px 9px;border-radius:999px;background:#f1efe8}
+.chip.low{background:#fee2e2;color:#991b1b}
+.bar{height:10px;border-radius:5px;display:inline-block;vertical-align:middle}
+.note{font-size:13px;color:var(--mute)}
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:8px}
+summary{cursor:pointer;font-weight:600}
+.hidden{display:none}
+svg text{font-family:Inter,sans-serif}
+.err{color:var(--warn);font-weight:600}
+footer{margin-top:48px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);padding-top:18px}
+a{color:var(--leo)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>µG-NeuroTune <span>Scorecard</span></h1>
+    <p class="sub">Is your midbrain organoid really maturing, or just stressed? Upload an RNA-seq count table and get a <b>Maturation · Dopaminergic fidelity · Stress/Hypoxia</b> profile per organoid. Add metadata to compare conditions (e.g. ISS vs ground).</p>
+  </div>
+  <div class="badge" id="gsBadge">gene sets v— · —</div>
+</header>
+
+<h2>1 · Your data <span style="text-transform:none;letter-spacing:0;font-weight:400">— processed in your browser, never uploaded</span></h2>
+<div class="grid">
+  <div class="card">
+    <div class="drop" id="dropCounts"><b>Counts table</b><small>CSV/TSV · genes in rows (HGNC symbols) · samples in columns · raw counts</small></div>
+    <input type="file" id="fileCounts" class="hidden" accept=".csv,.tsv,.txt">
+  </div>
+  <div class="card">
+    <div class="drop" id="dropMeta"><b>Metadata (optional)</b><small>columns: sample, condition, line, microglia</small></div>
+    <input type="file" id="fileMeta" class="hidden" accept=".csv,.tsv,.txt">
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px;justify-content:center">
+    <div class="row"><label class="note">reference</label><input id="refC" value="ground" class="mono" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:8px"><label class="note">test</label><input id="testC" value="LEO" class="mono" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:8px"></div>
+    <div class="row"><button id="runBtn" disabled>Score</button><button class="ghost" id="demoBtn">Load demo data</button></div>
+    <div class="note" id="status">Demo = synthetic ISS-like data with a planted hypoxia-driven "maturation" signal (not real results).</div>
+  </div>
+</div>
+
+<div id="results" class="hidden">
+  <h2>2 · Verdict</h2>
+  <div class="verdict" id="verdict"></div>
+
+  <h2>3 · Maturation–Fidelity map</h2>
+  <div class="two">
+    <div class="card"><div id="map"></div></div>
+    <div class="card" id="effectsCard">
+      <div style="font-weight:600;margin-bottom:8px">Condition effect per program <span class="note">(within line × microglia strata)</span></div>
+      <div id="effects"></div>
+      <p class="note" style="margin-top:10px">Bars: Hedges' g (test − reference). Calibrated on 800 simulated missions: 92.5–100% correct calls. q: within-stratum permutation test (2,000 shuffles), Benjamini–Hochberg FDR; grey = not significant. The Python package adds bootstrap CIs, the hypoxia-adjusted test and power analysis.</p>
+    </div>
+  </div>
+
+  <h2>4 · Gene-set coverage</h2>
+  <div class="card"><div class="chips" id="coverage"></div><p class="note" style="margin:10px 0 0">Programs with &lt;60% of genes found are unreliable: check that rows are HGNC symbols.</p></div>
+
+  <h2>5 · Scores per sample</h2>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="note">Rank-based scores in [−0.5, 0.5]; fidelity = DA identity − off-target.</span><button class="ghost" id="copyBtn">Copy as CSV</button></div>
+    <div class="scroll"><table id="scoreTable"></table></div>
+  </div>
+</div>
+
+<h2>How it works</h2>
+<details><summary>What each score means</summary>
+<p><b>Maturation</b>: pan-neuronal synaptic/cytoskeletal maturation genes, kept separate from dopaminergic genes. <b>DA identity</b>: midbrain floor-plate TFs + dopamine synthesis/handling. <b>Fidelity</b> subtracts non-midbrain (forebrain/hindbrain) identity. <b>Stress</b>: glycolysis and ER-stress programs typical of stressed organoid cells (Bhaduri 2020; Gruffi, Vértesy 2022). <b>Hypoxia</b>: HIF targets, with glycolytic enzymes excluded so hypoxia is not double-counted. All sets are non-overlapping and frozen before analysing the ISS data.</p>
+<p><b>Scoring</b>: within each sample, each program gene is ranked against <i>background</i> genes (genes in no program); a program's score is the mean of those ranks − 0.5. Ranking against background only means one program rising cannot drag the others down. Scores ignore library size and work on bulk RNA-seq and single-cell pseudobulk alike.</p></details>
+<details><summary>Verdict rules (pre-registered)</summary>
+<p><b>Promising maturation</b>: maturation up (g ≥ 0.5), identity/fidelity not down, no stress program up. <b>Mixed state</b>: maturation up together with a stress/hypoxia program. <b>Dysregulated</b>: maturation up but DA identity or fidelity down (g ≤ −0.5). <b>Insufficient evidence</b>: no robust maturation increase. Every call also requires FDR q &lt; 0.05 (within-stratum permutation test) and the same direction in every cell line; the Python package additionally requires a bootstrap CI excluding 0.</p></details>
+<details><summary>Gene sets</summary><div id="gsList" class="mono" style="font-size:12px"></div></details>
+<footer>µG-NeuroTune v0.1 · open-source Python package + this scorecard · built on NASA spaceflight organoid data (Marotta et al. 2024, <i>Stem Cells Transl Med</i>, GEO GSE259421). Scores describe transcription only: they are not functional maturity.</footer>
+</div>
+
+<script>/*CORE*/</script>
+<script>
+const GS = /*GENESETS*/;
+const DEMO_COUNTS = /*DEMO_COUNTS*/;
+const DEMO_META = /*DEMO_META*/;
+const SETS = GS.genesets;
+const KEY = ["maturation","da_identity","fidelity","progenitor_cycle","stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive","off_target","microglia_qc"];
+const PRETTY = {maturation:"Maturation",da_identity:"DA identity",fidelity:"Fidelity",progenitor_cycle:"Progenitor / cycle",stress_glycolysis:"Glycolytic stress",stress_er:"ER stress",hypoxia:"Hypoxia",p53_dna_damage:"p53 / DNA damage",glial_reactive:"Reactive glia",off_target:"Off-target region",microglia_qc:"Microglia (QC)"};
+let countsText=null, metaText=null, last=null;
+document.getElementById("gsBadge").textContent=`gene sets v${GS.version} · ${GS.fingerprint}`;
+document.getElementById("gsList").innerHTML=Object.entries(SETS).map(([k,v])=>`<p><b>${k}</b> (${v.role}) — ${v.genes.join(", ")}<br><span class="note">${v.source}</span></p>`).join("");
+
+function wire(dropId,fileId,setter){
+  const d=document.getElementById(dropId), f=document.getElementById(fileId);
+  d.onclick=()=>f.click();
+  d.ondragover=e=>{e.preventDefault();d.classList.add("over")};
+  d.ondragleave=()=>d.classList.remove("over");
+  const take=file=>file.text().then(t=>{setter(t);d.classList.add("done");d.querySelector("small").textContent=file.name;ready();});
+  d.ondrop=e=>{e.preventDefault();d.classList.remove("over");if(e.dataTransfer.files[0])take(e.dataTransfer.files[0]);};
+  f.onchange=()=>f.files[0]&&take(f.files[0]);
+}
+wire("dropCounts","fileCounts",t=>countsText=t);
+wire("dropMeta","fileMeta",t=>metaText=t);
+function ready(){document.getElementById("runBtn").disabled=!countsText;}
+document.getElementById("demoBtn").onclick=()=>{countsText=DEMO_COUNTS;metaText=DEMO_META;
+  for(const [id,n] of [["dropCounts","demo_counts.csv (synthetic)"],["dropMeta","demo_meta.csv"]]){const d=document.getElementById(id);d.classList.add("done");d.querySelector("small").textContent=n;}
+  ready();run();};
+document.getElementById("runBtn").onclick=run;
+
+function run(){
+  const st=document.getElementById("status");
+  try{
+    const c=MUGNT.parseCounts(countsText);
+    if(c.samples.length<2||c.genes.length<200) throw new Error(`Found ${c.genes.length} genes × ${c.samples.length} samples. Need ≥200 genes and ≥2 samples (genes in rows).`);
+    const {scores,coverage}=MUGNT.scoreAll(c,SETS);
+    const meta=metaText?MUGNT.parseMeta(metaText):null;
+    last={c,scores,coverage,meta};
+    st.textContent=`Scored ${c.samples.length} samples over ${c.genes.length.toLocaleString()} genes.`;
+    render();
+  }catch(e){st.innerHTML=`<span class="err">${e.message}</span>`;}
+}
+
+function fmt(x,d=3){return isFinite(x)?x.toFixed(d):"–"}
+
+function render(){
+  const {c,scores,coverage,meta}=last;
+  document.getElementById("results").classList.remove("hidden");
+  // coverage
+  document.getElementById("coverage").innerHTML=Object.entries(coverage).map(([k,v])=>{
+    const f=v.present/v.n;return `<span class="chip ${f<.6?"low":""}" title="missing: ${v.missing.join(", ")||"none"}">${PRETTY[k]||k} ${v.present}/${v.n}</span>`}).join("");
+  // table
+  const cols=KEY.filter(k=>scores[k]);
+  const metaCols=meta?["condition","line","microglia"].filter(x=>meta.columns.includes(x)):[];
+  let h="<tr><th>sample</th>"+metaCols.map(m=>`<th>${m}</th>`).join("")+cols.map(k=>`<th>${PRETTY[k]}</th>`).join("")+"</tr>";
+  c.samples.forEach((s,j)=>{h+=`<tr><td class="mono">${s}</td>`+metaCols.map(m=>`<td>${meta.bySample[s]?.[m]??""}</td>`).join("")+cols.map(k=>{const v=scores[k][j];const a=Math.min(Math.abs(v)/0.25,1);const col=v>=0?`rgba(29,78,216,${a*.22})`:`rgba(100,116,139,${a*.25})`;return `<td class="mono" style="background:${col}">${fmt(v)}</td>`}).join("")+"</tr>";});
+  document.getElementById("scoreTable").innerHTML=h;
+  // effects + verdict
+  const ref=document.getElementById("refC").value.trim(), test=document.getElementById("testC").value.trim();
+  let eff=null;
+  if(meta&&meta.columns.includes("condition")){
+    if(!meta.columns.includes("line")) c.samples.forEach(s=>meta.bySample[s]&&(meta.bySample[s].line=meta.bySample[s].line||"all"));
+    eff=MUGNT.stratifiedEffects(c.samples,scores,meta,ref,test);
+  }
+  renderEffects(eff,ref,test); renderVerdict(eff); renderMap(meta,ref,test);
+}
+
+function renderEffects(eff,ref,test){
+  const box=document.getElementById("effects");
+  if(!eff){box.innerHTML=`<p class="note">Add metadata with a <span class="mono">condition</span> column to compare ${ref} vs ${test}.</p>`;return;}
+  const rows=KEY.filter(k=>eff.effects[k]&&k!=="microglia_qc");
+  const maxg=Math.max(1.5,...rows.map(k=>Math.abs(eff.effects[k].g)||0));
+  box.innerHTML=`<table>${rows.map(k=>{const g=eff.effects[k].g;const w=Math.abs(g)/maxg*110;const col=g>=0?"var(--leo)":"var(--gnd)";
+    return `<tr><td>${PRETTY[k]}</td><td style="width:240px;text-align:left"><span style="display:inline-block;width:120px;text-align:right">${g<0?`<span class="bar" style="width:${w}px;background:${col}"></span>`:""}</span><span style="display:inline-block;width:1px;height:14px;background:#999;vertical-align:middle"></span>${g>=0?`<span class="bar" style="width:${w}px;background:${col}"></span>`:""}</td><td class="mono">${fmt(g,2)}</td><td class="mono" style="color:${eff.effects[k].q<0.05?"#1c2230":"#a3a9b4"}">q ${fmt(eff.effects[k].q,3)}</td></tr>`}).join("")}</table><p class="note">${eff.nStrata} strata · ${test} vs ${ref}</p>`;
+}
+
+function classify(e){
+  const up=k=>e[k]&&e[k].g>=0.5&&e[k].q<0.05&&e[k].consistent, down=k=>e[k]&&e[k].g<=-0.5&&e[k].q<0.05&&e[k].consistent;
+  const dys=["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(up);
+  if(!up("maturation")) return ["Insufficient evidence","t-ins","No robust maturation increase in the test condition."];
+  if(down("da_identity")||down("fidelity")) return ["Dysregulated state","t-dys","Maturation goes up, but dopaminergic identity / fidelity goes down."];
+  if(dys.length) return ["Mixed state","t-mixed",`Maturation goes up <b>together with</b> ${dys.map(d=>PRETTY[d]).join(", ")}. Part of the "maturation" may be a stress or oxygen-limitation response: run the hypoxia-adjusted test.`];
+  return ["Promising maturation","t-prom","Maturation up, dopaminergic identity preserved, no stress program up."];
+}
+function renderVerdict(eff){
+  const v=document.getElementById("verdict");
+  if(!eff){v.innerHTML=`<span class="verdict tag t-ins">No comparison</span><div>Scores are shown per sample below. Add metadata to get a verdict.</div>`;return;}
+  const [label,cls,why]=classify(eff.effects);
+  v.innerHTML=`<span class="tag ${cls}">${label}</span><div><div>${why}</div><div class="note" style="margin-top:6px">A program counts as changed only if |g| ≥ 0.5, q &lt; 0.05 and the direction agrees in every cell line. Confirm with the Python package (adds bootstrap CIs and the hypoxia-adjusted test).</div></div>`;
+}
+
+function renderMap(meta,ref,test){
+  const {c,scores}=last, W=560,H=420,P={l:64,r:20,t:20,b:48};
+  const xs=scores.maturation, ys=scores.fidelity, hy=scores.hypoxia||xs.map(()=>0);
+  const ext=a=>{const f=a.filter(isFinite);const lo=Math.min(...f),hi=Math.max(...f),pad=(hi-lo||.1)*.12;return [lo-pad,hi+pad]};
+  const [x0,x1]=ext(xs),[y0,y1]=ext(ys),[h0,h1]=[Math.min(...hy.filter(isFinite)),Math.max(...hy.filter(isFinite))];
+  const X=v=>P.l+(v-x0)/(x1-x0)*(W-P.l-P.r), Y=v=>H-P.b-(v-y0)/(y1-y0)*(H-P.t-P.b);
+  const fill=v=>{const t=h1>h0?(v-h0)/(h1-h0):0;const a=[254,237,222],b=[194,65,12];return `rgb(${a.map((x,i)=>Math.round(x+(b[i]-x)*t)).join(",")})`};
+  const lines=meta?[...new Set(c.samples.map(s=>meta.bySample[s]?.line||"all"))]:["all"];
+  const shape=(l,x,y)=>{const i=lines.indexOf(l)%3;return i===0?`<circle cx="${x}" cy="${y}" r="7"`:i===1?`<rect x="${x-6.5}" y="${y-6.5}" width="13" height="13"`:`<path d="M${x},${y-8}L${x+8},${y+6}L${x-8},${y+6}Z"`};
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Maturation versus fidelity map">`;
+  for(let i=0;i<=4;i++){const yv=y0+(y1-y0)*i/4,xv=x0+(x1-x0)*i/4;
+    s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="#eee"/><text x="${P.l-8}" y="${Y(yv)+4}" font-size="13" text-anchor="end" fill="#5b6474">${yv.toFixed(2)}</text>`;
+    s+=`<text x="${X(xv)}" y="${H-P.b+18}" font-size="13" text-anchor="middle" fill="#5b6474">${xv.toFixed(2)}</text>`;}
+  s+=`<text x="${(W+P.l)/2}" y="${H-8}" font-size="14" text-anchor="middle" fill="#1c2230">Maturation score →</text><text transform="translate(14 ${(H-P.b)/2}) rotate(-90)" font-size="14" text-anchor="middle" fill="#1c2230">Dopaminergic fidelity →</text>`;
+  c.samples.forEach((sm,j)=>{const m=meta?.bySample[sm]||{};const cond=m.condition;const stroke=cond===test?"#1d4ed8":cond===ref?"#64748b":"#1c2230";
+    s+=`${shape(m.line||"all",X(xs[j]),Y(ys[j]))} fill="${fill(hy[j])}" stroke="${stroke}" stroke-width="2.4"><title>${sm} · ${cond||""} · ${m.line||""} ${m.microglia||""}\nmaturation ${fmt(xs[j])} · fidelity ${fmt(ys[j])} · hypoxia ${fmt(hy[j])}</title></${shape(m.line||"all",0,0).match(/<(\w+)/)[1]}>`;});
+  if(meta){for(const [cond,col] of [[ref,"#64748b"],[test,"#1d4ed8"]]){const idx=c.samples.map((sm,j)=>meta.bySample[sm]?.condition===cond?j:-1).filter(j=>j>=0);if(!idx.length)continue;
+    const mx=idx.reduce((a,j)=>a+xs[j],0)/idx.length,my=idx.reduce((a,j)=>a+ys[j],0)/idx.length;
+    s+=`<path d="M${X(mx)-7},${Y(my)-7}L${X(mx)+7},${Y(my)+7}M${X(mx)+7},${Y(my)-7}L${X(mx)-7},${Y(my)+7}" stroke="${col}" stroke-width="3.5"/><text x="${X(mx)+10}" y="${Y(my)-8}" font-size="14" font-weight="700" fill="${col}" stroke="#fff" stroke-width="4" paint-order="stroke">${cond} mean</text>`;}}
+  s+=`</svg><div class="row note" style="margin-top:6px;gap:16px"><span>outline: <b style="color:#1d4ed8">${test}</b> / <b style="color:#64748b">${ref}</b></span><span>fill: hypoxia <span class="bar" style="width:70px;background:linear-gradient(90deg,rgb(254,237,222),rgb(194,65,12))"></span> low → high</span><span>shape: ${lines.map((l,i)=>["●","■","▲"][i%3]+" "+l).join(" · ")}</span></div>`;
+  document.getElementById("map").innerHTML=s;
+}
+
+document.getElementById("copyBtn").onclick=async()=>{
+  if(!last)return;const cols=KEY.filter(k=>last.scores[k]);
+  const csv=["sample,"+cols.join(",")].concat(last.c.samples.map((s,j)=>s+","+cols.map(k=>last.scores[k][j]).join(","))).join("\n");
+  try{await navigator.clipboard.writeText(csv);document.getElementById("copyBtn").textContent="Copied ✓";}catch(e){document.getElementById("copyBtn").textContent="Copy blocked: select table manually";}
+};
+</script>
+</body>
+</html>

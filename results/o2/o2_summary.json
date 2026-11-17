@@ -1,0 +1,28 @@
+{
+  "n": 3000,
+  "P(ug more hypoxic than 1g, by >=5 pct-points of volume)": 0.13133333333333333,
+  "P(1g more hypoxic than ug, by >=5 pct-points)": 0.21533333333333332,
+  "P(similar within 5 pct-points)": 0.6533333333333333,
+  "P(ug surface O2 lower than 1g)": 0.3923333333333333,
+  "median surface O2 % 1g": 1.1326119552832248,
+  "median surface O2 % ug": 1.2125371575659654,
+  "median hypoxic fraction 1g": 0.962966796875,
+  "median hypoxic fraction ug": 0.9447980957031252,
+  "P(>5% of organoid hypoxic) 1g": 0.9386666666666666,
+  "P(>5% of organoid hypoxic) ug": 0.9373333333333334,
+  "median R_far/R_near 1g": 0.157989688917264,
+  "median R_far/R_near ug": 0.19978567639922473,
+  "sealed-vial O2 budget days (median, 5th-95th pct)": [
+    35.44425944813082,
+    7.660736998163301,
+    170.8655076047509
+  ],
+  "P(sealed impermeable vial runs out of O2 before day 30)": 0.44233333333333336,
+  "top_drivers_of_difference": {
+    "U_1g_um_s": 0.572,
+    "u_pos": 0.267,
+    "contact_1g": 0.244,
+    "ocr_amol_s": 0.137,
+    "c_mix": 0.104
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "beta": 0.12586651234567897,
+  "sd_organoid": 0.054726702759115176,
+  "sd_donor": 0.0,
+  "sd_donor_x_cond": 0.0200620169494918,
+  "n_donors_used": 2,
+  "note": "with <=2 donors, donor-level SDs are extremely uncertain; power grid therefore sweeps sd_donor_x_cond as a ratio of sd_organoid"
+}
