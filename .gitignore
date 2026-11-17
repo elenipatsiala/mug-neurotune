@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-data/
+/data/
+build/
+*.egg-info/
 results/o2_test/
