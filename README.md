@@ -1,5 +1,7 @@
 # µG-NeuroTune
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24319198.svg)](https://doi.org/10.5281/zenodo.24319198)
+
 ![Main results](results/real/fig_main_results.png)
 
 **Is your midbrain organoid really maturing, or just stressed?**
@@ -77,7 +79,9 @@ results/         demo_synthetic/ (SYNTHETIC) · o2/ · calibration.json
   or gas-permeable vessel that keeps the organoid normoxic in µg, plus a ground test plan.
 
 ## Cite
-See `CITATION.cff`. Primary data: Marotta D. et al. (2024) *Stem Cells Transl Med* 13(12):1186–1197,
+Patsiala, E. (2026). *µG-NeuroTune: a validated maturation, dopaminergic-fidelity and stress scorecard for human midbrain organoids* (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.24319198
+
+See also `CITATION.cff`. Primary data: Marotta D. et al. (2024) *Stem Cells Transl Med* 13(12):1186–1197,
 doi:10.1093/stcltm/szae070.
 
 License: MIT.

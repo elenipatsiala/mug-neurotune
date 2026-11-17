@@ -3,6 +3,7 @@ message: "If you use µG-NeuroTune, please cite it as below."
 title: "µG-NeuroTune: a validated maturation, dopaminergic-fidelity and stress scorecard for human midbrain organoids"
 version: 0.2.0
 date-released: 2026-11-17
+doi: 10.5281/zenodo.24319198
 license: MIT
 authors:
   - family-names: "Patsiala"
