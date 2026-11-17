@@ -98,6 +98,14 @@
         scores.age_clock = c.samples.map((_, j) => mr(ckUp, j) - mr(ckDown, j));
       }
     }
+    // validated progenitor-loss read-out: minus the program-style rank score of SOX2 + NES
+    if (gi.has("SOX2") && gi.has("NES")) {
+      const ref = bg;
+      scores.progenitor_loss = c.samples.map((_, j) => {
+        let s2 = 0; for (const g of ["SOX2", "NES"]) { const v = L[gi.get(g)][j]; s2 += (lowerBound(ref[j], v) + upperBound(ref[j], v)) / 2 / ref[j].length; }
+        return -(s2 / 2 - 0.5);
+      });
+    }
     return { scores, coverage };
   }
 

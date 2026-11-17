@@ -1,11 +1,13 @@
-"""Neuronal age clock (v0.2): learned from fetal ventral-midbrain NEURONS, 6-11.5 PCW
-(GSE192405, Birtele et al. 2022), frozen before being tested on any organoid data.
+"""Neuronal age clock.
+
+v0.3 (default): genes whose age trend in fetal ventral-midbrain NEURONS has the same sign in two
+independent datasets (Birtele et al. 2022, GSE192405; La Manno et al. 2016, GSE76381). Frozen in git
+before a held-out test; validated on three organoid time courses from three labs (rho 0.74-0.99).
+v0.2 (kept for history): trained on GSE192405 only; failed the second organoid dataset (rho 0.49).
 
 score = mean background-referenced rank of 50 age-UP genes
       - mean background-referenced rank of 50 age-DOWN genes
-Up genes are dominated by mitochondrial respiration (neurons switch from glycolysis to
-oxidative phosphorylation as they mature); down genes by immature-neuron cytoskeleton.
-Training script: examples/train_fetal_clock.py.
+Training scripts: examples/train_fetal_clock.py (v0.2), examples/train_fetal_clock_v03.py (v0.3).
 """
 from __future__ import annotations
 
@@ -17,14 +19,16 @@ import pandas as pd
 
 from .genesets import gene_lists
 
-_PATH = os.path.join(os.path.dirname(__file__), "data", "neuronal_age_clock.json")
+_DATA = os.path.join(os.path.dirname(__file__), "data")
+_PATH = os.path.join(_DATA, "neuronal_age_clock_v03.json")
+_VERSIONS = {"0.3": "neuronal_age_clock_v03.json", "0.2": "neuronal_age_clock_v02.json"}
 # HGNC renames between older 10x references and current NCBI/Ensembl annotations
 ALIASES = {"ATP5MPL": "ATP5MJ", "ATP5MD": "ATP5MK", "H3F3A": "H3-3A", "ATP5ME": "ATP5ME",
            "C1orf61": "CROC4"}
 
 
-def load_clock() -> dict:
-    with open(_PATH) as fh:
+def load_clock(version: str = "0.3") -> dict:
+    with open(os.path.join(_DATA, _VERSIONS[version])) as fh:
         return json.load(fh)
 
 

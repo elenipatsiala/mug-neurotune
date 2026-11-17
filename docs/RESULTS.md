@@ -1,4 +1,21 @@
-# Results on real data (v0.2.0, 2026-11-17)
+# Results on real data
+
+> **v0.3.0 update (2026-11-17) — supersedes the maturation conclusions of v0.2 below.**
+> * The v0.2 clock **failed** a second organoid dataset (BrainSTEM GSE281535, ρ = 0.49). Its genes did not replicate
+>   in a second fetal dataset. It is retired.
+> * **Clock v0.3** (genes with the same age trend in two independent fetal datasets) was frozen in git, then
+>   **passed a held-out third dataset (GSE277032, ρ = 0.95)**. It also passes Lund (0.74) and BrainSTEM (0.99).
+> * Maturation is now read from a **validated panel** of three read-outs (clock v0.3, fetal-correlation age,
+>   SOX2+NES progenitor loss), each passing all three organoid datasets (`docs/BENCHMARK.md`).
+> * **ISS result with the panel (official CLI run, `results/real/CD_v03_*`): "insufficient evidence" for
+>   faster maturation in both dopaminergic and cortical organoids.** No read-out is significant after FDR. The clock
+>   leans "older" (g = +0.97 DA, +1.62 cortical; equivalent to only ~2–3 culture days), fetal correlation leans
+>   "younger" for DA (g = −1.03), progenitor loss shows no change. The read-outs do not agree.
+> * Robust spaceflight signals are unchanged: **glycolysis ↑** (DA g = +1.41, q = 0.017) and **p53/DNA-damage ↓**
+>   (DA g = −3.76, q = 0.011; cortical g = −3.31, q = 0.017), same direction in every cell line.
+> * Benchmark take-away: the common maturity markers (NeuN, SYP, TH, MAP2) track neuron content, not age.
+
+## v0.2.0 analysis (kept for the record)
 
 Main figure: `results/real/fig_main_results.png` (script: `examples/figure_real_results.py`).
 

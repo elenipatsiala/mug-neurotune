@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.3.0 — 2026-11-17
+* **Clock v0.3**: consensus genes from two independent fetal VM datasets (Birtele 2022 + La Manno 2016).
+  Frozen in git (commit 86e8d2e) before the held-out test; passed it (ρ = 0.95). v0.2 retired (failed BrainSTEM).
+* **Validated maturity panel** (`mug_neurotune/maturity.py`): clock v0.3, fetal-correlation age (fetal reference
+  bundled), SOX2+NES progenitor loss. The classifier calls a maturation change only if ≥ 2 read-outs agree and
+  none disagree; new verdict "inconsistent maturity read-outs".
+* **Benchmark** of 12 read-outs on 3 organoid datasets (`docs/BENCHMARK.md`).
+* Expert input recorded (O₂ not measured; polypropylene vials).
+* ISS conclusions updated: no consistent evidence of faster maturation.
+
 ## v0.2.0 — 2026-11-17 (after first real-data run)
 * **Step A failed for the v0.1 maturation marker set** on real organoids (ρ = −0.16). Kept as a
   descriptive "synaptic markers" score; never drives the verdict.

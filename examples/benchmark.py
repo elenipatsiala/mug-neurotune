@@ -38,7 +38,12 @@ shared = lc.index.intersection(fet.index)
 expressed = shared[(lc.loc[shared] > 1).mean(1) > 0.5]
 genes = anchor.age_informative_genes(fet.loc[expressed], fage, n_genes=300)
 scores["fetal-correlation age"] = anchor.estimate_age(lc, fet, fage, genes=genes)["est_pcw"]
-scores["age clock (this tool)"] = clock.clock_score(lc)["age_clock"]
+scores["age clock v0.2"] = clock.clock_score(lc)["age_clock"]
+import json as _j
+_orig = clock.load_clock
+clock.load_clock = lambda: _j.load(open(os.path.join(os.path.dirname(clock.__file__), "data", "neuronal_age_clock_v03.json")))
+scores["age clock v0.3 (this tool)"] = clock.clock_score(lc)["age_clock"]
+clock.load_clock = _orig
 
 def partial_spearman(x, y, z):
     rx, ry, rz = (stats.rankdata(v) for v in (x, y, z))

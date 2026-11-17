@@ -142,6 +142,7 @@ def test_clock_frozen_and_aliases():
     from mug_neurotune import clock
     ck = clock.load_clock()
     assert len(ck["up"]) == 50 and len(ck["down"]) == 50 and not set(ck["up"]) & set(ck["down"])
+    assert ck["version"] == "0.3.0" and clock.load_clock("0.2")["version"] == "0.2.0"
     idx = pd.Index(["ATP5MJ", "H3-3A"])
     assert clock._resolve(["ATP5MPL", "H3F3A"], idx) == ["ATP5MJ", "H3-3A"]
 
@@ -161,3 +162,19 @@ def test_score_all_adds_clock_when_genes_present():
         + [f"BG{i}" for i in range(2000)]
     c = pd.DataFrame(rng.poisson(50, (len(genes), 4)), index=genes, columns=list("abcd"))
     assert "age_clock" in scoring.score_all(io.log_cpm(c)).columns
+
+
+def test_panel_agreement_rule():
+    rows = lambda gs, qs: pd.DataFrame({"hedges_g": gs, "ci_low": [g - 0.1 if g > 0 else g - 1 for g in gs],
+                                        "ci_high": [g + 1 if g > 0 else g + 0.1 for g in gs], "q_bh": qs,
+                                        "consistent_lines": True},
+                                       index=["age_clock", "fetal_corr_age", "progenitor_loss"])
+    assert compare.classify(rows([1.0, 1.0, 0.1], [0.01, 0.01, 0.9]))[0] == "promising maturation"
+    assert compare.classify(rows([1.0, 0.1, 0.1], [0.01, 0.9, 0.9]))[0] == "insufficient evidence"
+    assert compare.classify(rows([1.0, -1.0, 0.1], [0.01, 0.01, 0.9]))[0] == "inconsistent maturity read-outs"
+
+
+def test_fetal_reference_bundled():
+    from mug_neurotune import maturity
+    ref, age = maturity.load_fetal_reference()
+    assert ref.shape[1] == 4 and sorted(age.values) == [6.0, 8.0, 10.5, 11.5]

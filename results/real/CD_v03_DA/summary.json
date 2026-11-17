@@ -1,0 +1,31 @@
+{
+  "classification": "insufficient evidence",
+  "reason": "No robust maturation increase on the maturity panel (0 of 3 read-outs up, 0 down).",
+  "maturation_axis": "age_clock",
+  "adjusted_tests": {
+    "hypoxia": {
+      "target": "age_clock",
+      "covariate": "hypoxia",
+      "within_strata_r": 0.575430887788209,
+      "slope": 0.09663289406993514,
+      "g_raw": 0.9693288933950958,
+      "g_adjusted": 0.9440335981869458,
+      "share_explained": 0.02609567854678574,
+      "verdict": "effect largely independent of hypoxia score"
+    },
+    "stress_glycolysis": {
+      "target": "age_clock",
+      "covariate": "stress_glycolysis",
+      "within_strata_r": 0.8185129684960991,
+      "slope": 0.2619045565416737,
+      "g_raw": 0.9693288933950958,
+      "g_adjusted": -0.10826690838641051,
+      "share_explained": 1.111692645421105,
+      "verdict": "hypoxia explains most of the effect"
+    }
+  },
+  "rank_vs_z_sign_agreement": 0.8181818181818182,
+  "maturation_logo_sign_flips": 0,
+  "geneset_version": "0.1.0",
+  "geneset_fingerprint": "ce3ab2617ac2602c"
+}

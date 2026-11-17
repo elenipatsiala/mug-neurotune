@@ -17,3 +17,9 @@ the held-out organoid dataset (GSE277032 midbrain-like organoids). The test and 
 * v0.3 was then scored on both development organoid sets: Lund ρ = 0.74 (whole) / 0.95 (neurons);
   BrainSTEM ρ = 0.99 / 0.99. Because v0.3 was designed after seeing v0.2 fail, these are development
   results, not proof; the held-out test above is the proof.
+
+## Outcome of the held-out test (run 2026-11-17, after this file and the clock were pushed)
+GSE277032 organoid pools, day 40 / 70 / 120 (3 pools each; day-40/70 pools also contain some 2D cultures).
+**Clock v0.3, whole organoid: ρ = 0.95 (95% CI 0.77–0.97) → PASS.** Neurons only: ρ = 0.95.
+Mean clock by day: 40 → −0.023, 70 → −0.012, 120 → −0.007 (monotonic), although neurons fall from
+57% to 23% of cells by day 120. The clock was not changed after this test.

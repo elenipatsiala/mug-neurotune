@@ -77,10 +77,11 @@ def score_all(logcpm: pd.DataFrame, method: str = "rank",
     if "da_identity" in out and "off_target" in out:
         out["fidelity"] = out["da_identity"] - out["off_target"]
     if method == "rank" and default_sets:
-        from .clock import clock_score
-        ck = clock_score(logcpm)
-        if ck["age_clock"].notna().all():
-            out["age_clock"] = ck["age_clock"]
+        from .maturity import maturity_panel
+        panel = maturity_panel(logcpm)
+        for col in panel.columns:
+            if panel[col].notna().all():
+                out[col] = panel[col]
     return out
 
 

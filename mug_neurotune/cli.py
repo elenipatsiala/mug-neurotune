@@ -69,7 +69,7 @@ def run_compare(lc, meta, out, n_perm=5000, n_boot=2000):
     res.to_csv(os.path.join(out, "leo_vs_ground.csv"))
     sens = compare.compare_programs(scoring.score_all(lc, "z"), meta, n_perm=n_perm // 5, n_boot=n_boot // 4)
     sens.to_csv(os.path.join(out, "leo_vs_ground_zscore_sensitivity.csv"))
-    target = "age_clock" if "age_clock" in sc.columns else "maturation"
+    target = "age_clock" if "age_clock" in sc.columns else "maturation"   # adjusted test uses the clock
     adj = {cov: compare.hypoxia_adjusted(sc, meta, target=target, covariate=cov)
            for cov in ("hypoxia", "stress_glycolysis")}
     label, why = compare.classify(res)

@@ -190,9 +190,15 @@ def hypoxia_adjusted(scores: pd.DataFrame, meta: pd.DataFrame, target: str = "ma
 
 
 def classify(res: pd.DataFrame) -> tuple[str, str]:
-    """Pre-registered evidence classification (see docs/PREREGISTRATION.md)."""
-    # A program counts as changed only if: |g| >= 0.5 AND the bootstrap CI of the
-    # difference excludes 0 AND Benjamini-Hochberg q < Q_MAX across all programs.
+    """Pre-registered evidence classification (see docs/PREREGISTRATION.md).
+
+    v0.3: the maturation axis is the validated maturity PANEL (maturity.PANEL). Maturation counts as
+    increased only if >= 2 of its read-outs are significantly up and none is significantly down.
+    If the panel cannot be computed (e.g. synthetic data without the clock genes), the v0.1 marker
+    score is used and the reason string says so.
+    """
+    from .maturity import PANEL
+
     def up(p):
         r = res.loc[p] if p in res.index else None
         return (r is not None and r.hedges_g >= G_MEANINGFUL and r.ci_low > 0 and r.q_bh < Q_MAX
@@ -203,17 +209,22 @@ def classify(res: pd.DataFrame) -> tuple[str, str]:
         return (r is not None and r.hedges_g <= -G_MEANINGFUL and r.ci_high < 0 and r.q_bh < Q_MAX
                 and bool(r.get("consistent_lines", True)))
 
-    # v0.2: the maturation axis is the fetal-trained neuronal age clock (validated on an
-    # independent organoid time-course, rho = 0.91). The v0.1 'maturation' marker set failed
-    # that validation and is kept only as a descriptive synaptic-marker score.
-    axis = "age_clock" if "age_clock" in res.index and np.isfinite(res.loc["age_clock", "hedges_g"]) else "maturation"
-    mat_up = up(axis)
+    panel = [p for p in PANEL if p in res.index and np.isfinite(res.loc[p, "hedges_g"])]
+    if len(panel) >= 2:
+        n_up, n_down = sum(up(p) for p in panel), sum(down(p) for p in panel)
+        mat_up = n_up >= 2 and n_down == 0
+        axis = f"maturity panel ({n_up} of {len(panel)} read-outs up, {n_down} down)"
+        if n_up and n_down:
+            return "inconsistent maturity read-outs", f"Validated read-outs disagree: {axis}."
+    else:
+        mat_up = up("maturation")
+        axis = "v0.1 marker score (validated panel unavailable for these data)"
     fid_down = down("da_identity") or down("fidelity")
     dys_up = [p for p in DYSREGULATION if up(p)]
     if not mat_up:
-        return "insufficient evidence", f"No robust increase on the maturation axis ({axis})."
+        return "insufficient evidence", f"No robust maturation increase on the {axis}."
     if fid_down:
-        return "dysregulated state", "Maturation up but dopaminergic identity/fidelity down."
+        return "dysregulated state", f"Maturation up ({axis}) but dopaminergic identity/fidelity down."
     if dys_up:
-        return "mixed state", "Maturation up together with: " + ", ".join(dys_up)
-    return "promising maturation", "Maturation up, identity preserved, no dysregulation program up."
+        return "mixed state", f"Maturation up ({axis}) together with: " + ", ".join(dys_up)
+    return "promising maturation", f"Maturation up ({axis}), identity preserved, no dysregulation program up."

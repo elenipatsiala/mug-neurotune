@@ -107,12 +107,12 @@ a{color:var(--leo)}
 
 <h2>How it works</h2>
 <details><summary>What each score means</summary>
-<p><b>Age clock ✓</b> (the maturation axis): 50 genes that rise and 50 that fall as human fetal midbrain neurons age (6–11.5 weeks post-conception; GSE192405), learned on fetal tissue only and then tested blind on an independent organoid time-course (days 15–120; GSE168323): Spearman ρ = 0.91 (95% CI 0.71–0.96) on whole organoids, 0.84 on neurons only. <b>Synaptic markers</b> is the v0.1 marker set; it failed that same test (ρ = −0.16), so it is shown for description only and never drives the verdict. <b>DA identity</b>: midbrain floor-plate TFs + dopamine synthesis/handling. <b>Fidelity</b> subtracts non-midbrain (forebrain/hindbrain) identity. <b>Stress</b>: glycolysis and ER-stress programs typical of stressed organoid cells (Bhaduri 2020; Gruffi, Vértesy 2022). <b>Hypoxia</b>: HIF targets, with glycolytic enzymes excluded so hypoxia is not double-counted. All sets are non-overlapping and frozen before analysing the ISS data.</p>
+<p><b>Maturity panel ✓</b>: two read-outs that each tracked culture age in <b>three midbrain-organoid time courses from three labs</b>. <b>Age clock v0.3</b>: 50 genes that rise and 50 that fall with age in fetal midbrain neurons in <i>two</i> independent fetal datasets (GSE192405, GSE76381); frozen before a held-out test, which it passed (ρ = 0.95); ρ = 0.74–0.99 across the three labs. <b>Progenitor loss</b>: decline of SOX2 + NES (ρ = 0.94–0.98). A maturation change is called only when both agree (the Python package adds a third read-out, fetal-correlation age). <b>Synaptic markers</b> (v0.1) and common markers such as NeuN, SYP, TH and MAP2 track neuron content, not age, so they never drive the verdict. <b>DA identity</b>: midbrain floor-plate TFs + dopamine synthesis/handling. <b>Fidelity</b> subtracts non-midbrain (forebrain/hindbrain) identity. <b>Stress</b>: glycolysis and ER-stress programs typical of stressed organoid cells (Bhaduri 2020; Gruffi, Vértesy 2022). <b>Hypoxia</b>: HIF targets, with glycolytic enzymes excluded so hypoxia is not double-counted. All sets are non-overlapping and frozen before analysing the ISS data.</p>
 <p><b>Scoring</b>: within each sample, each program gene is ranked against <i>background</i> genes (genes in no program); a program's score is the mean of those ranks − 0.5. Ranking against background only means one program rising cannot drag the others down. Scores ignore library size and work on bulk RNA-seq and single-cell pseudobulk alike.</p></details>
 <details><summary>Verdict rules (pre-registered)</summary>
-<p><b>Promising maturation</b>: age clock up (g ≥ 0.5), identity/fidelity not down, no stress program up. <b>Mixed state</b>: maturation up together with a stress/hypoxia program. <b>Dysregulated</b>: maturation up but DA identity or fidelity down (g ≤ −0.5). <b>Insufficient evidence</b>: no robust maturation increase. Every call also requires FDR q &lt; 0.05 (within-stratum permutation test) and the same direction in every cell line; the Python package additionally requires a bootstrap CI excluding 0.</p></details>
+<p><b>Promising maturation</b>: both maturity read-outs up (g ≥ 0.5), identity/fidelity not down, no stress program up. <b>Mixed state</b>: maturation up together with a stress/hypoxia program. <b>Dysregulated</b>: maturation up but DA identity or fidelity down (g ≤ −0.5). <b>Insufficient evidence</b>: no robust maturation increase. Every call also requires FDR q &lt; 0.05 (within-stratum permutation test) and the same direction in every cell line; the Python package additionally requires a bootstrap CI excluding 0.</p></details>
 <details><summary>Gene sets</summary><div id="gsList" class="mono" style="font-size:12px"></div></details>
-<footer>µG-NeuroTune v0.1 · open-source Python package + this scorecard · built on NASA spaceflight organoid data (Marotta et al. 2024, <i>Stem Cells Transl Med</i>, GEO GSE259421). Scores describe transcription only: they are not functional maturity.</footer>
+<footer>µG-NeuroTune v0.3 · <a href="https://github.com/elenipatsiala/mug-neurotune">GitHub</a> · DOI <a href="https://doi.org/10.5281/zenodo.24319198">10.5281/zenodo.24319198</a> · open-source Python package + this scorecard · built on NASA spaceflight organoid data (Marotta et al. 2024, <i>Stem Cells Transl Med</i>, GEO GSE259421). Scores describe transcription only: they are not functional maturity.</footer>
 </div>
 
 <script>// µG-NeuroTune scoring core (browser + node). Must match mug_neurotune/scoring.py exactly.
@@ -214,6 +214,14 @@ a{color:var(--leo)}
         const mr = (genes, j) => genes.reduce((s2, g) => { const v = L[gi.get(g)][j], r = bg2[j]; return s2 + (lowerBound(r, v) + upperBound(r, v)) / 2 / r.length; }, 0) / genes.length;
         scores.age_clock = c.samples.map((_, j) => mr(ckUp, j) - mr(ckDown, j));
       }
+    }
+    // validated progenitor-loss read-out: minus the program-style rank score of SOX2 + NES
+    if (gi.has("SOX2") && gi.has("NES")) {
+      const ref = bg;
+      scores.progenitor_loss = c.samples.map((_, j) => {
+        let s2 = 0; for (const g of ["SOX2", "NES"]) { const v = L[gi.get(g)][j]; s2 += (lowerBound(ref[j], v) + upperBound(ref[j], v)) / 2 / ref[j].length; }
+        return -(s2 / 2 - 0.5);
+      });
     }
     return { scores, coverage };
   }
@@ -469,10 +477,10 @@ const GS = {
     }
   }
 };
-const CLOCK = {"up": ["ATP5ME", "UQCR11", "CALM2", "FTH1", "TMSB4X", "MIF", "PSMA2", "SKP1", "BEX3", "NDUFA13", "ATP5MPL", "ARL6IP1", "MORF4L1", "PPDPF", "COX7A2", "UQCRQ", "TMEM14A", "COX6A1", "ATP5F1E", "NDUFB1", "TMA7", "ACTB", "PTN", "ATP5MD", "COX6C", "NDUFA3", "SEC61G", "PET100", "BEX5", "NDUFA4", "POLR2L", "ELOB", "NDUFA11", "MEG3", "ATP5MF", "CDC42", "GPM6A", "EIF4E", "TMSB10", "LAPTM4A", "YWHAE", "HMGN3", "COX6B1", "GTF2H5", "SUB1", "TUBB2A", "SAR1A", "PEG10", "ATP5MG", "UBL5"], "down": ["ACTG1", "TPT1", "MARCKSL1", "EEF1A1", "RBP1", "CKB", "UBE2S", "TUBB2B", "DDX5", "H3F3A", "TUBA1A", "GPC2", "NACA", "TKT", "RTRAF", "EIF5", "NOP53", "CHD4", "SRRM2", "HNRNPD", "TOMM20", "DPYSL4", "FADS1", "LHX1", "CD24", "KIF5B", "BZW2", "DDAH2", "CCT2", "NASP", "PNN", "ZFHX4", "HNRNPR", "METTL9", "BOD1", "KDM1A", "RACK1", "EPB41", "SMC3", "XRN2", "POU2F2", "NRN1", "SINHCAF", "SLC25A3", "SMARCA5", "PHB2", "JAKMIP2", "TXNL1", "MEX3A", "NIPSNAP1"], "aliases": {"ATP5MPL": "ATP5MJ", "ATP5MD": "ATP5MK", "H3F3A": "H3-3A", "ATP5ME": "ATP5ME", "C1orf61": "CROC4"}};
+const CLOCK = {"up": ["PTN", "BEX5", "MEG3", "GPM6A", "CDC42", "TMEM14A", "TUBB2A", "PEG10", "CHD5", "ATP1B1", "FTH1", "SEC62", "GTF2H5", "ABCA5", "NTRK2", "HMGN3", "PPP3CA", "STRN3", "LAPTM4A", "ZNF428", "IRF2BPL", "RTN1", "NREP", "TSPAN7", "SOX11", "SNCA", "CNTN1", "TCF4", "GPM6B", "GUK1", "GOLGA8B", "PNCK", "BEX2", "C1orf56", "CAPZA2", "NTM", "MAP1LC3A", "TMEM161B-AS1", "DAAM1", "BEX1", "CD47", "FXYD6", "ZFAND6", "LRFN5", "PRNP", "NDUFC2", "TNRC6B", "LINC00632", "YWHAQ", "SERPINE2"], "down": ["ACTG1", "RBP1", "EEF1A1", "NACA", "TAGLN3", "NONO", "TMEM97", "ACAT2", "RBMX", "FDFT1", "TPT1", "NR2F1", "KPNA2", "NAP1L1", "GAPDH", "NHLH2", "EIF3L", "NELL2", "MRPL51", "TUBB", "HMGB2", "HNRNPA1", "ZFAS1", "RAN", "PCBP4", "PHF21B", "CNTN2", "PAFAH1B3", "DDAH2", "GNG5", "SSR4", "MIB1", "EIF3H", "SLC25A5", "FKBP3", "RPLP0", "RHOA", "EIF3K", "RPSA", "LDHB", "CCT7", "C3orf58", "ARL4A", "CSDE1", "SMARCE1", "CCT2", "PRDX6", "CBX3", "PSMD4", "SRSF7"], "aliases": {"ATP5MPL": "ATP5MJ", "ATP5MD": "ATP5MK", "H3F3A": "H3-3A", "ATP5ME": "ATP5ME", "C1orf61": "CROC4"}};
 const SETS = GS.genesets;
-const KEY = ["age_clock","maturation","da_identity","fidelity","progenitor_cycle","stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive","off_target","microglia_qc"];
-const PRETTY = {age_clock:"Age clock ✓",maturation:"Synaptic markers",da_identity:"DA identity",fidelity:"Fidelity",progenitor_cycle:"Progenitor / cycle",stress_glycolysis:"Glycolytic stress",stress_er:"ER stress",hypoxia:"Hypoxia",p53_dna_damage:"p53 / DNA damage",glial_reactive:"Reactive glia",off_target:"Off-target region",microglia_qc:"Microglia (QC)"};
+const KEY = ["age_clock","progenitor_loss","maturation","da_identity","fidelity","progenitor_cycle","stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive","off_target","microglia_qc"];
+const PRETTY = {age_clock:"Age clock v0.3 ✓",progenitor_loss:"Progenitor loss ✓",maturation:"Synaptic markers",da_identity:"DA identity",fidelity:"Fidelity",progenitor_cycle:"Progenitor / cycle",stress_glycolysis:"Glycolytic stress",stress_er:"ER stress",hypoxia:"Hypoxia",p53_dna_damage:"p53 / DNA damage",glial_reactive:"Reactive glia",off_target:"Off-target region",microglia_qc:"Microglia (QC)"};
 let countsText=null, metaText=null, last=null;
 document.getElementById("gsBadge").textContent=`gene sets v${GS.version} · ${GS.fingerprint}`;
 document.getElementById("gsList").innerHTML=Object.entries(SETS).map(([k,v])=>`<p><b>${k}</b> (${v.role}) — ${v.genes.join(", ")}<br><span class="note">${v.source}</span></p>`).join("");
@@ -549,9 +557,13 @@ function renderEffects(eff,ref,test){
 
 function classify(e){
   const up=k=>e[k]&&e[k].g>=0.5&&e[k].q<0.05&&e[k].consistent, down=k=>e[k]&&e[k].g<=-0.5&&e[k].q<0.05&&e[k].consistent;
-  const axis=e.age_clock&&isFinite(e.age_clock.g)?"age_clock":"maturation";
+  const panel=["age_clock","progenitor_loss"].filter(k=>e[k]&&isFinite(e[k].g));
+  const nUp=panel.filter(up).length, nDown=panel.filter(down).length;
+  if(panel.length===2&&nUp&&nDown) return ["Inconsistent read-outs","t-mixed","The two validated maturity read-outs disagree (one up, one down)."];
+  const axis=panel.length===2?"panel":"maturation";
+  const upAxis=k=>k==="panel"?(nUp===2):up(k);
   const dys=["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(up);
-  if(!up(axis)) return ["Insufficient evidence","t-ins",`No robust increase on the ${axis==="age_clock"?"validated neuronal age clock":"maturation marker score (age clock unavailable: clock genes missing)"}.`+(["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).length?` Changed programs: ${["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).map(k=>PRETTY[k]+(up(k)?" ↑":" ↓")).join(", ")}.`:"")];
+  if(!upAxis(axis)) return ["Insufficient evidence","t-ins",`No robust maturation increase: ${axis==="panel"?`${nUp} of 2 validated read-outs up (both must agree)`:"validated read-outs unavailable (clock genes missing), v0.1 marker score used"}.`+(["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).length?` Changed programs: ${["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).map(k=>PRETTY[k]+(up(k)?" ↑":" ↓")).join(", ")}.`:"")];
   if(down("da_identity")||down("fidelity")) return ["Dysregulated state","t-dys","Maturation goes up, but dopaminergic identity / fidelity goes down."];
   if(dys.length) return ["Mixed state","t-mixed",`Maturation goes up <b>together with</b> ${dys.map(d=>PRETTY[d]).join(", ")}. Part of the "maturation" may be a stress or oxygen-limitation response: run the hypoxia-adjusted test.`];
   return ["Promising maturation","t-prom","Maturation up, dopaminergic identity preserved, no stress program up."];

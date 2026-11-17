@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24319198.svg)](https://doi.org/10.5281/zenodo.24319198)
 
-![Main results](results/real/fig_main_results.png)
+![Benchmark](results/real/fig_benchmark.png)
 
 **Is your midbrain organoid really maturing, or just stressed?**
 
@@ -20,7 +20,7 @@ flight culture vials.
 ## What's inside
 | Step | What it does | Module / command |
 |---|---|---|
-| A · validate | Checks the maturation score rises with known culture age | `mugnt validate` |
+| A · validate | Validated maturity panel (age clock v0.3, fetal-correlation age, progenitor loss), benchmarked on 3 labs | `mugnt validate`, `maturity.py` |
 | B · anchor | Estimates the fetal age (PCW) each organoid resembles | `mugnt anchor` |
 | C · compare | LEO vs ground within cell line × microglia strata; permutation p, bootstrap CI, FDR; pre-registered verdict | `mugnt compare` |
 | D · hypoxia | Hypoxia-adjusted maturation test + O₂ physics model of the vial | `mugnt compare`, `o2model/` |
@@ -38,19 +38,17 @@ python o2model/run_o2.py results/o2 3000     # O2 Monte Carlo + figures
 ```
 Real data: follow **`docs/DATA_GUIDE.md`** (exact files and commands).
 
-## Current status (v0.2.0, 2026-11-17): run on real data
-* ✅ **Validated maturation axis.** A neuronal age clock learned from human fetal midbrain neurons
-  (GSE192405) orders an *independent* organoid time-course (GSE168323, days 15–120) with
-  **ρ = 0.91** (95% CI 0.71–0.96). The v0.1 marker set failed the same test (ρ = −0.16) and is now
-  descriptive only.
-* ✅ **Applied to NASA ISS organoids (GSE259421).** No change on the validated clock (g = 0.00,
-  q = 0.995). Glycolysis up (g = +1.41, q = 0.017) and p53/DNA-damage down (g = −3.76, q = 0.011),
-  same direction in both cell lines and in cortical organoids from two other donors.
-* ✅ **Mission design:** 2 donors gives ≤ 28% power for a 2-week maturation effect; 4 donors × 4
-  organoids per arm gives 88%.
-* ✅ Classifier calibrated on 800 simulated missions (92.5–100% correct). Browser and Python give
-  identical scores on the real data. 17 tests pass.
-* Full write-up: **`docs/RESULTS.md`** · figure: `results/real/fig_main_results.png`.
+## Current status (v0.3.0, 2026-11-17)
+* ✅ **Validated maturity panel**: three read-outs that each track culture age in **three midbrain-organoid
+  time courses from three labs** (ρ 0.74–0.99), including a **held-out test run after freezing the clock**
+  (ρ = 0.95). See **`docs/BENCHMARK.md`** and `results/real/fig_benchmark.png`.
+* ✅ **Benchmark finding:** NeuN, SYP, TH and MAP2, the markers often shown as "maturity", track neuron content,
+  not age (they fail in 2 of 3 datasets).
+* ✅ **NASA ISS organoids (GSE259421):** no consistent evidence of faster maturation (verdict "insufficient
+  evidence" in dopaminergic and cortical organoids). Robust signals: glycolysis ↑ and p53/DNA-damage ↓,
+  same direction in every cell line.
+* ✅ Mission design: 2 donors gives ≤ 28% power for a 2-week maturation effect; 4 donors × 4 organoids per arm: 88%.
+* ✅ 19 tests; classifier calibrated on 800 simulated missions. Full write-up: **`docs/RESULTS.md`**.
 
 ## Design choices that make it trustworthy
 * **Pre-registered** gene sets and decision rules (`docs/PREREGISTRATION.md`), fingerprinted
@@ -74,7 +72,7 @@ results/         demo_synthetic/ (SYNTHETIC) · o2/ · calibration.json
 ```
 
 ## Roadmap
-* **v0.3:** more fetal ages (2nd trimester) for the clock, day-90 organoids, expert review of gene sets, preprint.
+* **v0.4:** second-trimester fetal data for the clock, cortical-organoid benchmark, expert review of gene sets, preprint.
 * **Phase 2 Create:** O₂-controlled culture for microgravity. Use the O₂ model to size a perfused
   or gas-permeable vessel that keeps the organoid normoxic in µg, plus a ground test plan.
 
