@@ -1,5 +1,7 @@
 # µG-NeuroTune
 
+![Main results](results/real/fig_main_results.png)
+
 **Is your midbrain organoid really maturing, or just stressed?**
 
 µG-NeuroTune is an open, validated scorecard that profiles human midbrain (dopaminergic)
@@ -25,7 +27,9 @@ flight culture vials.
 
 ## Quick start
 ```bash
-pip install -e .            # numpy, scipy, pandas, matplotlib
+pip install git+https://github.com/elenipatsiala/mug-neurotune
+# or, to run the tests and examples:
+git clone https://github.com/elenipatsiala/mug-neurotune && cd mug-neurotune && pip install -e .            # numpy, scipy, pandas, matplotlib
 mugnt demo --out results/demo_synthetic      # end-to-end on SYNTHETIC data with known truth
 pytest -q                                    # 17 tests (~30 s)
 python o2model/run_o2.py results/o2 3000     # O2 Monte Carlo + figures

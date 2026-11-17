@@ -1,15 +1,14 @@
 cff-version: 1.2.0
 message: "If you use µG-NeuroTune, please cite it as below."
 title: "µG-NeuroTune: a validated maturation, dopaminergic-fidelity and stress scorecard for human midbrain organoids"
-version: 0.1.0
+version: 0.2.0
 date-released: 2026-11-17
 license: MIT
 authors:
-  - family-names: "YOUR-SURNAME"
-    given-names: "YOUR-GIVEN-NAME"
+  - family-names: "Patsiala"
+    given-names: "Eleni"
     affiliation: "The Knowledge Society (TKS)"
-    orcid: "https://orcid.org/0000-0000-0000-0000"
-repository-code: "https://github.com/YOUR-USERNAME/mug-neurotune"
+repository-code: "https://github.com/elenipatsiala/mug-neurotune"
 keywords: [brain organoids, midbrain, dopaminergic neurons, Parkinson's disease, spaceflight, microgravity, transcriptomics, hypoxia]
 references:
   - type: article

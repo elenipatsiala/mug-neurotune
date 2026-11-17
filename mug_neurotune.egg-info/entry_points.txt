@@ -1,0 +1,2 @@
+[console_scripts]
+mugnt = mug_neurotune.cli:main
