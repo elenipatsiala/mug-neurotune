@@ -1,0 +1,19 @@
+sample,fetal_corr_age,title,organoid_type,microglia,condition,line,in_counts
+GSM8115911,10.174639456704769,"Subject3, Dopaminergic organoid, without microglia, Ground1",DA,noMG,ground,CTRL_UEC741,True
+GSM8115912,10.094979752870314,"Subject3, Dopaminergic organoid, without microglia, Ground2",DA,noMG,ground,CTRL_UEC741,True
+GSM8115913,10.645695479799976,"Subject3, Dopaminergic organoid, with microglia, Ground1",DA,MG,ground,CTRL_UEC741,True
+GSM8115915,10.554382743830221,"Subject3, Dopaminergic organoid, with microglia, Ground3",DA,MG,ground,CTRL_UEC741,True
+GSM8115917,10.88794824255518,"Subject4, Dopaminergic organoid, without microglia, Ground2",DA,noMG,ground,PD_HDF410,True
+GSM8115918,10.654376451423852,"Subject4, Dopaminergic organoid, without microglia, Ground3",DA,noMG,ground,PD_HDF410,True
+GSM8115919,10.397296325255063,"Subject4, Dopaminergic organoid, without microglia, Ground4",DA,noMG,ground,PD_HDF410,True
+GSM8115920,10.685021709888467,"Subject4, Dopaminergic organoid, with microglia, Ground1",DA,MG,ground,PD_HDF410,True
+GSM8115922,10.449968894938339,"Subject4, Dopaminergic organoid, with microglia, Ground3",DA,MG,ground,PD_HDF410,True
+GSM8115923,10.135242926560638,"Subject3, Dopaminergic organoid, without microglia, LEO1",DA,noMG,LEO,CTRL_UEC741,True
+GSM8115924,10.154287284906841,"Subject3, Dopaminergic organoid, without microglia, LEO2",DA,noMG,LEO,CTRL_UEC741,True
+GSM8115925,9.31239107774509,"Subject3, Dopaminergic organoid, without microglia, LEO3",DA,noMG,LEO,CTRL_UEC741,True
+GSM8115926,10.424376954143296,"Subject3, Dopaminergic organoid, with microglia, LEO1",DA,MG,LEO,CTRL_UEC741,True
+GSM8115927,10.580419727694363,"Subject3, Dopaminergic organoid, with microglia, LEO2",DA,MG,LEO,CTRL_UEC741,True
+GSM8115928,10.18040672464901,"Subject4, Dopaminergic organoid, without microglia, LEO1",DA,noMG,LEO,PD_HDF410,True
+GSM8115930,9.957860051424039,"Subject4, Dopaminergic organoid, without microglia, LEO3",DA,noMG,LEO,PD_HDF410,True
+GSM8115931,9.642491357393347,"Subject4, Dopaminergic organoid, without microglia, LEO4",DA,noMG,LEO,PD_HDF410,True
+GSM8115933,9.980472297869873,"Subject4, Dopaminergic organoid, with microglia, LEO2",DA,MG,LEO,PD_HDF410,True

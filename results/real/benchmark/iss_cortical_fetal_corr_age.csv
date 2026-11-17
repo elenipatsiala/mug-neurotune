@@ -1,0 +1,19 @@
+sample,fetal_corr_age,title,organoid_type,microglia,condition,line,in_counts
+GSM8115892,8.734153642109343,"Subject1, Cortical organoid, without microglia, Ground1",cortical,noMG,ground,051121-01-MR-017,True
+GSM8115893,8.555486835342633,"Subject1, Cortical organoid, without microglia, Ground2",cortical,noMG,ground,051121-01-MR-017,True
+GSM8115894,8.934456886782787,"Subject1, Cortical organoid, without microglia, Ground3",cortical,noMG,ground,051121-01-MR-017,True
+GSM8115895,8.527020602156679,"Subject1, Cortical organoid, with microglia, Ground1",cortical,MG,ground,051121-01-MR-017,True
+GSM8115896,8.675279918491807,"Subject1, Cortical organoid, with microglia, Ground2",cortical,MG,ground,051121-01-MR-017,True
+GSM8115897,8.568396889846584,"Subject1, Cortical organoid, with microglia, Ground3",cortical,MG,ground,051121-01-MR-017,True
+GSM8115898,8.849427114676486,"Subject2, Cortical organoid, without microglia, Ground1",cortical,noMG,ground,AK003-01-MR-008,True
+GSM8115899,8.981722687043824,"Subject2, Cortical organoid, without microglia, Ground2",cortical,noMG,ground,AK003-01-MR-008,True
+GSM8115900,8.90522973599587,"Subject2, Cortical organoid, with microglia, Ground1",cortical,MG,ground,AK003-01-MR-008,True
+GSM8115901,8.86725392101443,"Subject2, Cortical organoid, with microglia, Ground2",cortical,MG,ground,AK003-01-MR-008,True
+GSM8115902,8.763258439720474,"Subject1, Cortical organoid, without microglia, LEO1",cortical,noMG,LEO,051121-01-MR-017,True
+GSM8115903,8.452072196993864,"Subject1, Cortical organoid, without microglia, LEO2",cortical,noMG,LEO,051121-01-MR-017,True
+GSM8115904,8.762228957995053,"Subject1, Cortical organoid, with microglia, LEO1",cortical,MG,LEO,051121-01-MR-017,True
+GSM8115906,8.615334554826005,"Subject1, Cortical organoid, with microglia, LEO3",cortical,MG,LEO,051121-01-MR-017,True
+GSM8115907,8.968232698723824,"Subject2, Cortical organoid, without microglia, LEO1",cortical,noMG,LEO,AK003-01-MR-008,True
+GSM8115908,8.808322897654142,"Subject2, Cortical organoid, without microglia, LEO2",cortical,noMG,LEO,AK003-01-MR-008,True
+GSM8115909,8.913180517703228,"Subject2, Cortical organoid, with microglia, LEO1",cortical,MG,LEO,AK003-01-MR-008,True
+GSM8115910,9.010719573610439,"Subject2, Cortical organoid, with microglia, LEO2",cortical,MG,LEO,AK003-01-MR-008,True
