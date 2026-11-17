@@ -53,6 +53,19 @@ sealed vials*, so that part of the "faster maturation" signal is really a hypoxi
    variable in the experiment, and that alone justifies the Phase-2 Create: a vessel that
    controls O₂ delivery in µg (perfused or gas-permeable culture), sized with this model.
 
+## Expert input (Dr. Valentina Fossati, co-author of the ISS study, Nov 2026)
+* **Oxygen was not measured** in flight or ground samples (it was explored but not feasible). The paper's
+  "no signs of hypoxia" therefore does not rest on an O₂ measurement.
+* The vials were **standard polypropylene cryovials, which may allow gas diffusion at 37 °C**.
+Consequences for the model:
+* The **L0 worst case** (sealed, gas-impermeable vial running out of O₂ before day 30 in ~44% of runs) is
+  **unlikely**: O₂ can be resupplied through the wall, so the far-field O₂ level stays nearer air saturation.
+* The **main conclusion is unchanged**. Most transport resistance sits in the boundary layer around the
+  organoid (L2), which wall permeation does not remove, so both conditions remain near a diffusion limit.
+  A permeable wall also shortens the distance to an O₂ source, but the near-organoid resistance still dominates.
+* This makes O₂ an **uncontrolled and unmeasured variable** in the flight experiment, and is the
+  motivation for the Phase-2 design (measured, controlled O₂ delivery in µg).
+
 ## Honest limitations
 Steady state (diffusion time over the vial ≈ 15 h ≪ 30 d, so reasonable); spherical organoid;
 uniform cell density; no necrotic-core feedback on uptake; convection represented by

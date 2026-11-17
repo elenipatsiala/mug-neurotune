@@ -58,6 +58,8 @@ day 70–120 organoids near 15 PCW; our reference stops at 11.5 PCW and cannot r
   which is the opposite of the glycolysis-to-respiration switch of maturing neurons. Marker-based
   "maturation" read-outs pick up this shift. Fits the O₂ model (`docs/O2_MODEL.md`): both culture
   conditions sit near a diffusion limit, and µg can tip the organoid into O₂ limitation.
+* Expert input: a co-author of the ISS study confirmed that **O₂ was not measured**, and that the vials were
+  standard polypropylene cryovials that may allow gas diffusion at 37 °C (see `docs/O2_MODEL.md`).
 
 ## Step E: what should the next mission fly? (variance from these data)
 * Organoid-to-organoid SD on the clock ≈ 6.6 culture-days of maturation.
