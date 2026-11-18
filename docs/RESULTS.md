@@ -9,10 +9,13 @@
 >   SOX2+NES progenitor loss), each passing all three organoid datasets (`docs/BENCHMARK.md`).
 > * **ISS result with the panel (official CLI run, `results/real/CD_v03_*`): "insufficient evidence" for
 >   faster maturation in both dopaminergic and cortical organoids.** No read-out is significant after FDR. The clock
->   leans "older" (g = +0.97 DA, +1.62 cortical; equivalent to only ~2–3 culture days), fetal correlation leans
+>   leans "older" (g = +0.97 DA, +1.62 cortical; ≈ 6 culture days at the organoids' age of ~day 60–70, range ~1–12 days
+>   depending on which organoid time course is used to convert clock units to days), fetal correlation leans
 >   "younger" for DA (g = −1.03), progenitor loss shows no change. The read-outs do not agree.
 > * Robust spaceflight signals are unchanged: **glycolysis ↑** (DA g = +1.41, q = 0.017) and **p53/DNA-damage ↓**
 >   (DA g = −3.76, q = 0.011; cortical g = −3.31, q = 0.017), same direction in every cell line.
+> * Power (v0.3 clock variance, `results/real/E_power_v03.json`): to detect 2 weeks of faster maturation, 2 donors give
+>   ≤ 36% power; 4 donors × 2 organoids per arm 88%; 4 × 4 98%.
 > * Benchmark take-away: the common maturity markers (NeuN, SYP, TH, MAP2) track neuron content, not age.
 
 ## v0.2.0 analysis (kept for the record)

@@ -1,0 +1,98 @@
+{
+ "clock": "v0.3",
+ "per_day_slopes": {
+  "lund": 0.0003887122787511934,
+  "brainstem": 0.002836279774188154,
+  "heldout": 0.00019933386617501428
+ },
+ "per_day_used": 0.0003887122787511934,
+ "variance_components": {
+  "beta": 0.002437879871290665,
+  "sd_organoid": 0.0020363012660103157,
+  "sd_donor": 0.004648070581408669,
+  "sd_donor_x_cond": 0.0,
+  "n_donors_used": 2,
+  "note": "with <=2 donors, donor-level SDs are extremely uncertain; power grid therefore sweeps sd_donor_x_cond as a ratio of sd_organoid"
+ },
+ "iss_effect_in_days": 6.271682178712705,
+ "minimal": {
+  "7": [
+   {
+    "dxc_ratio": 0.0,
+    "n_donors": 8,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 16,
+    "power": 0.89325,
+    "effect_days": 7
+   },
+   {
+    "dxc_ratio": 0.5,
+    "n_donors": 8,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 16,
+    "power": 0.821,
+    "effect_days": 7
+   },
+   {
+    "dxc_ratio": 1.0,
+    "n_donors": 12,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 24,
+    "power": 0.842,
+    "effect_days": 7
+   }
+  ],
+  "14": [
+   {
+    "dxc_ratio": 0.0,
+    "n_donors": 4,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 8,
+    "power": 0.92725,
+    "effect_days": 14
+   },
+   {
+    "dxc_ratio": 0.5,
+    "n_donors": 4,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 8,
+    "power": 0.87575,
+    "effect_days": 14
+   },
+   {
+    "dxc_ratio": 1.0,
+    "n_donors": 6,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 12,
+    "power": 0.9545,
+    "effect_days": 14
+   }
+  ],
+  "28": [
+   {
+    "dxc_ratio": 0.0,
+    "n_donors": 3,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 6,
+    "power": 0.98275,
+    "effect_days": 28
+   },
+   {
+    "dxc_ratio": 0.5,
+    "n_donors": 3,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 6,
+    "power": 0.9645,
+    "effect_days": 28
+   },
+   {
+    "dxc_ratio": 1.0,
+    "n_donors": 3,
+    "organoids_per_donor_per_arm": 2,
+    "total_organoids_flown": 6,
+    "power": 0.88125,
+    "effect_days": 28
+   }
+  ]
+ }
+}

@@ -16,7 +16,9 @@ plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.rig
 def maturation_fidelity_map(scores: pd.DataFrame, meta: pd.DataFrame, path: str,
                             cond_col="condition", stress_col="hypoxia", title=None):
     fig, ax = plt.subplots(figsize=(6.2, 5))
-    s = scores.loc[meta.index]
+    s = scores.loc[meta.index].copy()
+    xcol = "age_clock" if "age_clock" in s.columns else "maturation"
+    s["_x"] = s[xcol]
     stress = s[stress_col]
     norm = plt.Normalize(stress.min(), stress.max())
     markers = {}
@@ -24,20 +26,20 @@ def maturation_fidelity_map(scores: pd.DataFrame, meta: pd.DataFrame, path: str,
         markers[line] = "os^Dv"[i % 5]
     for (cond, line), sub in meta.groupby([meta[cond_col].astype(str),
                                           meta.get("line", pd.Series("all", index=meta.index)).astype(str)]):
-        ax.scatter(s.loc[sub.index, "maturation"], s.loc[sub.index, "fidelity"],
+        ax.scatter(s.loc[sub.index, "_x"], s.loc[sub.index, "fidelity"],
                    c=stress.loc[sub.index], cmap="Oranges", norm=norm, s=70,
                    marker=markers[line], edgecolors=COND_COLORS.get(cond, "k"), linewidths=2,
                    label=f"{cond} · {line}")
     for cond, sub in meta.groupby(meta[cond_col].astype(str)):
-        mx, my = s.loc[sub.index, "maturation"].mean(), s.loc[sub.index, "fidelity"].mean()
+        mx, my = s.loc[sub.index, "_x"].mean(), s.loc[sub.index, "fidelity"].mean()
         ax.scatter(mx, my, marker="X", s=180, color=COND_COLORS.get(cond, "k"), zorder=5)
         ax.annotate(f"{cond} mean", (mx, my), xytext=(6, 6), textcoords="offset points",
                     color=COND_COLORS.get(cond, "k"), fontweight="bold")
     sm = plt.cm.ScalarMappable(cmap="Oranges", norm=norm)
     fig.colorbar(sm, ax=ax, label=f"{stress_col} score (fill)")
-    ax.set_xlabel("Maturation score  →  more mature")
+    ax.set_xlabel("Neuronal age clock v0.3  →  older" if xcol == "age_clock" else "Synaptic marker score (v0.1, not validated)")
     ax.set_ylabel("Dopaminergic fidelity (DA identity − off-target)")
-    ax.set_title(title or "µG-NeuroTune Maturation–Fidelity map", loc="left", fontweight="bold")
+    ax.set_title(title or "µG-NeuroTune Age–Fidelity map", loc="left", fontweight="bold")
     ax.legend(fontsize=7, frameon=False, loc="best", title="edge = condition")
     fig.tight_layout()
     fig.savefig(path, dpi=200)

@@ -49,7 +49,7 @@ Real data: follow **`docs/DATA_GUIDE.md`** (exact files and commands).
 * ✅ **NASA ISS organoids (GSE259421):** no consistent evidence of faster maturation (verdict "insufficient
   evidence" in dopaminergic and cortical organoids). Robust signals: glycolysis ↑ and p53/DNA-damage ↓,
   same direction in every cell line.
-* ✅ Mission design: 2 donors gives ≤ 28% power for a 2-week maturation effect; 4 donors × 4 organoids per arm: 88%.
+* ✅ Mission design (v0.3 clock): 2 donors gives ≤ 36% power for a 2-week maturation effect; 4 donors × 2 organoids per arm: 88%; 4 × 4: 98%.
 * ✅ 19 tests; classifier calibrated on 800 simulated missions. Full write-up: **`docs/RESULTS.md`**.
 
 ## Design choices that make it trustworthy
@@ -74,6 +74,7 @@ results/         demo_synthetic/ (SYNTHETIC) · o2/ · calibration.json
 ```
 
 ## Roadmap
+* **Using it on new data:** see **`docs/USAGE.md`**.
 * **v0.4:** second-trimester fetal data for the clock, cortical-organoid benchmark, expert review of gene sets, preprint.
 * **Phase 2 Create:** O₂-controlled culture for microgravity. Use the O₂ model to size a perfused
   or gas-permeable vessel that keeps the organoid normoxic in µg, plus a ground test plan.
