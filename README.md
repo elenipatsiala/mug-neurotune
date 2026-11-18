@@ -6,6 +6,8 @@
 
 **Is your midbrain organoid really maturing, or just stressed?**
 
+👉 **[Try the web scorecard](https://claude.ai/artifact/TK2dUAJXq8brdPJfXiLQF3)**: upload a count table, or click "Try it on NASA ISS data". Runs in your browser; your data is not uploaded.
+
 µG-NeuroTune is an open, validated scorecard that profiles human midbrain (dopaminergic)
 organoids on three axes from RNA-seq: **Neuronal age (validated clock)**, **Dopaminergic fidelity** and
 **Stress/Hypoxia**. It ships with a spaceflight module, built around the NASA ISS organoid
@@ -25,7 +27,7 @@ flight culture vials.
 | C · compare | LEO vs ground within cell line × microglia strata; permutation p, bootstrap CI, FDR; pre-registered verdict | `mugnt compare` |
 | D · hypoxia | Hypoxia-adjusted maturation test + O₂ physics model of the vial | `mugnt compare`, `o2model/` |
 | E · design | Power for the next mission (donors × organoids) | `mugnt power` |
-| F · app | Browser scorecard: upload counts, get the profile (data stays local) | `webapp/index.html` |
+| F · app | Browser scorecard: upload counts, get the profile (data stays local) | [open it](https://claude.ai/artifact/TK2dUAJXq8brdPJfXiLQF3) · `webapp/index.html` |
 
 ## Quick start
 ```bash
