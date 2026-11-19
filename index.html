@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>µG-NeuroTune Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F8F7F3;--card:#fff;--ink:#1c2230;--mute:#5b6474;--line:#e4e1d8;--leo:#1d4ed8;--gnd:#64748b;--warn:#c2410c;--ok:#15803d;--amber:#b45309}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:40px 24px 80px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:22px}
+h1{font-size:30px;letter-spacing:-.02em;margin:0 0 6px}
+h1 span{color:var(--leo)}
+.sub{color:var(--mute);max-width:640px;margin:0}
+.badge{font:500 12px/1 "JetBrains Mono",monospace;color:var(--mute);border:1px solid var(--line);padding:7px 10px;border-radius:999px;background:#fff}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin:36px 0 12px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.drop{border:1.5px dashed #cfcabc;border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:.15s;background:#fdfcf9}
+.drop:hover,.drop.over{border-color:var(--leo);background:#f3f6ff}
+.drop b{display:block;margin-bottom:4px}
+.drop small{color:var(--mute)}
+.drop.done{border-style:solid;border-color:var(--ok);background:#f2fbf5}
+button{font:600 14px Inter,sans-serif;border:0;border-radius:10px;padding:11px 16px;cursor:pointer;background:var(--ink);color:#fff}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mono{font-family:"JetBrains Mono",monospace;font-size:12.5px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute);font-size:12px;position:sticky;top:0;background:#fff}
+.scroll{max-height:420px;overflow:auto;border-radius:10px;border:1px solid var(--line)}
+.verdict{border-radius:14px;padding:18px 20px;border:1px solid var(--line);background:#fff;display:flex;gap:18px;align-items:flex-start}
+.verdict .tag{font:700 13px Inter;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.t-prom{background:#dcfce7;color:#166534}.t-mixed{background:#ffedd5;color:#9a3412}.t-dys{background:#fee2e2;color:#991b1b}.t-ins{background:#eef0f3;color:#475569}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:4px 9px;border-radius:999px;background:#f1efe8}
+.chip.low{background:#fee2e2;color:#991b1b}
+.bar{height:10px;border-radius:5px;display:inline-block;vertical-align:middle}
+.note{font-size:13px;color:var(--mute)}
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:8px}
+summary{cursor:pointer;font-weight:600}
+.hidden{display:none}
+svg text{font-family:Inter,sans-serif}
+.err{color:var(--warn);font-weight:600}
+footer{margin-top:48px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);padding-top:18px}
+a{color:var(--leo)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>µG-NeuroTune <span>Scorecard</span></h1>
+    <p class="sub">Is your midbrain organoid really maturing, or just stressed? Upload an RNA-seq count table and get a <b>Neuronal age · Dopaminergic fidelity · Stress/Hypoxia</b> profile per organoid. Add metadata to compare conditions (e.g. ISS vs ground).</p>
+  </div>
+  <div class="badge" id="gsBadge">gene sets v— · —</div>
+</header>
+
+<h2>1 · Your data <span style="text-transform:none;letter-spacing:0;font-weight:400">— processed in your browser, never uploaded</span></h2>
+<div class="grid">
+  <div class="card">
+    <div class="drop" id="dropCounts"><b>Counts table</b><small>CSV/TSV · genes in rows (HGNC symbols) · samples in columns · raw counts</small></div>
+    <input type="file" id="fileCounts" class="hidden" accept=".csv,.tsv,.txt">
+  </div>
+  <div class="card">
+    <div class="drop" id="dropMeta"><b>Metadata (optional)</b><small>columns: sample, condition, line, microglia</small></div>
+    <input type="file" id="fileMeta" class="hidden" accept=".csv,.tsv,.txt">
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px;justify-content:center">
+    <div class="row"><label class="note">reference</label><input id="refC" value="ground" class="mono" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:8px"><label class="note">test</label><input id="testC" value="LEO" class="mono" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:8px"></div>
+    <div class="row"><button id="runBtn" disabled>Score</button><button class="ghost" id="demoBtn">Try it on NASA ISS data</button></div>
+    <div class="note" id="status">Demo = real public data: dopaminergic organoids flown on the ISS vs ground controls (Marotta et al. 2024, GEO GSE259421; genes with mean count ≥ 5).</div>
+  </div>
+</div>
+
+<div id="results" class="hidden">
+  <h2>2 · Verdict</h2>
+  <div class="verdict" id="verdict"></div>
+
+  <h2>3 · Age–Fidelity map</h2>
+  <div class="two">
+    <div class="card"><div id="map"></div></div>
+    <div class="card" id="effectsCard">
+      <div style="font-weight:600;margin-bottom:8px">Condition effect per program <span class="note">(within line × microglia strata)</span></div>
+      <div id="effects"></div>
+      <p class="note" style="margin-top:10px">Bars: Hedges' g (test − reference). Calibrated on 800 simulated missions: 92.5–100% correct calls. q: within-stratum permutation test (2,000 shuffles), Benjamini–Hochberg FDR; grey = not significant. The Python package adds bootstrap CIs, the hypoxia-adjusted test and power analysis.</p>
+    </div>
+  </div>
+
+  <h2>4 · Gene-set coverage</h2>
+  <div class="card"><div class="chips" id="coverage"></div><p class="note" style="margin:10px 0 0">Programs with &lt;60% of genes found are unreliable: check that rows are HGNC symbols.</p></div>
+
+  <h2>5 · Scores per sample</h2>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="note">Rank-based scores in [−0.5, 0.5]; fidelity = DA identity − off-target.</span><button class="ghost" id="copyBtn">Copy as CSV</button></div>
+    <div class="scroll"><table id="scoreTable"></table></div>
+  </div>
+</div>
+
+<h2>How it works</h2>
+<details><summary>What each score means</summary>
+<p><b>Maturity panel ✓</b>: two read-outs that each tracked culture age in <b>three midbrain-organoid time courses from three labs</b>. <b>Age clock v0.3</b>: 50 genes that rise and 50 that fall with age in fetal midbrain neurons in <i>two</i> independent fetal datasets (GSE192405, GSE76381); frozen before a held-out test, which it passed (ρ = 0.95); ρ = 0.74–0.99 across the three labs. <b>Progenitor loss</b>: decline of SOX2 + NES (ρ = 0.94–0.98). A maturation change is called only when both agree (the Python package adds a third read-out, fetal-correlation age). <b>Synaptic markers</b> (v0.1) and common markers such as NeuN, SYP, TH and MAP2 track neuron content, not age, so they never drive the verdict. <b>DA identity</b>: midbrain floor-plate TFs + dopamine synthesis/handling. <b>Fidelity</b> subtracts non-midbrain (forebrain/hindbrain) identity. <b>Stress</b>: glycolysis and ER-stress programs typical of stressed organoid cells (Bhaduri 2020; Gruffi, Vértesy 2022). <b>Hypoxia</b>: HIF targets, with glycolytic enzymes excluded so hypoxia is not double-counted. All sets are non-overlapping and frozen before analysing the ISS data.</p>
+<p><b>Scoring</b>: within each sample, each program gene is ranked against <i>background</i> genes (genes in no program); a program's score is the mean of those ranks − 0.5. Ranking against background only means one program rising cannot drag the others down. Scores ignore library size and work on bulk RNA-seq and single-cell pseudobulk alike.</p></details>
+<details><summary>Verdict rules (pre-registered)</summary>
+<p><b>Promising maturation</b>: both maturity read-outs up (g ≥ 0.5), identity/fidelity not down, no stress program up. <b>Mixed state</b>: maturation up together with a stress/hypoxia program. <b>Dysregulated</b>: maturation up but DA identity or fidelity down (g ≤ −0.5). <b>Insufficient evidence</b>: no robust maturation increase. Every call also requires FDR q &lt; 0.05 (within-stratum permutation test) and the same direction in every cell line; the Python package additionally requires a bootstrap CI excluding 0.</p></details>
+<details><summary>Gene sets</summary><div id="gsList" class="mono" style="font-size:12px"></div></details>
+<footer>µG-NeuroTune v0.3 · <a href="https://github.com/elenipatsiala/mug-neurotune">GitHub</a> · DOI <a href="https://doi.org/10.5281/zenodo.24319198">10.5281/zenodo.24319198</a> · open-source Python package + this scorecard · built on NASA spaceflight organoid data (Marotta et al. 2024, <i>Stem Cells Transl Med</i>, GEO GSE259421). Scores describe transcription only: they are not functional maturity.</footer>
+</div>
+
+<script>// µG-NeuroTune scoring core (browser + node). Must match mug_neurotune/scoring.py exactly.
+(function (root) {
+  function parseTable(text) {
+    const lines = text.replace(/\r/g, "").split("\n").filter(l => l.trim().length && !l.startsWith("#"));
+    const sep = (lines[0].match(/\t/g) || []).length > (lines[0].match(/,/g) || []).length ? "\t" : ",";
+    const head = lines[0].split(sep).map(s => s.trim().replace(/^"|"$/g, ""));
+    const rows = lines.slice(1).map(l => l.split(sep).map(s => s.trim().replace(/^"|"$/g, "")));
+    return { head, rows };
+  }
+
+  // counts: genes x samples. Duplicate symbols summed. Non-numeric annotation columns dropped.
+  function parseCounts(text) {
+    const { head, rows } = parseTable(text);
+    const skip = new Set(["Chr", "Start", "End", "Strand", "Length", "gene_name", "Symbol", "symbol"]);
+    let symCol = head.findIndex(h => ["gene_name", "Symbol", "symbol"].includes(h));
+    const sampleIdx = [];
+    for (let j = 1; j < head.length; j++) if (!skip.has(head[j])) sampleIdx.push(j);
+    const samples = sampleIdx.map(j => head[j]);
+    const map = new Map();
+    for (const r of rows) {
+      const g = String(symCol > 0 ? r[symCol] : r[0]);
+      if (!g) continue;
+      const v = sampleIdx.map(j => { const x = parseFloat(r[j]); return isFinite(x) ? x : 0; });
+      if (map.has(g)) { const a = map.get(g); for (let k = 0; k < v.length; k++) a[k] += v[k]; }
+      else map.set(g, v);
+    }
+    const genes = [...map.keys()].sort();
+    return { genes, samples, X: genes.map(g => map.get(g)) };
+  }
+
+  function parseMeta(text) {
+    const { head, rows } = parseTable(text);
+    const out = {};
+    for (const r of rows) { const o = {}; head.forEach((h, j) => o[h] = r[j]); out[r[0]] = o; }
+    return { columns: head, bySample: out };
+  }
+
+  function logCPM(c) {
+    const n = c.samples.length, lib = new Array(n).fill(0);
+    for (const row of c.X) for (let j = 0; j < n; j++) lib[j] += row[j];
+    return c.X.map(row => row.map((v, j) => Math.log2(v / lib[j] * 1e6 + 1)));
+  }
+
+  // average-tie rank / n, per sample (column)
+  function rankColumns(L) {
+    const G = L.length, n = L[0].length, R = Array.from({ length: G }, () => new Array(n));
+    for (let j = 0; j < n; j++) {
+      const idx = [...Array(G).keys()].sort((a, b) => L[a][j] - L[b][j]);
+      let i = 0;
+      while (i < G) {
+        let k = i;
+        while (k + 1 < G && L[idx[k + 1]][j] === L[idx[i]][j]) k++;
+        const avg = (i + k) / 2 + 1;
+        for (let t = i; t <= k; t++) R[idx[t]][j] = avg / G;
+        i = k + 1;
+      }
+    }
+    return R;
+  }
+
+  const lowerBound = (a, x) => { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] < x) lo = m + 1; else hi = m; } return lo; };
+  const upperBound = (a, x) => { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] <= x) lo = m + 1; else hi = m; } return lo; };
+
+  // Background-referenced rank score (matches scoring.py): each program gene is ranked
+  // against genes that belong to NO program, so one program rising cannot drag others down.
+  function scoreAll(c, genesets, clock) {
+    const L = logCPM(c), gi = new Map(c.genes.map((g, i) => [g, i]));
+    const programGenes = new Set(Object.values(genesets).flatMap(d => d.genes));
+    let ckUp = [], ckDown = [];
+    if (clock) {
+      const res = g => gi.has(g) ? g : (clock.aliases[g] && gi.has(clock.aliases[g]) ? clock.aliases[g] : null);
+      ckUp = clock.up.map(res).filter(Boolean); ckDown = clock.down.map(res).filter(Boolean);
+    }
+    let bgIdx = c.genes.map((g, i) => programGenes.has(g) ? -1 : i).filter(i => i >= 0);
+    if (bgIdx.length < 100) bgIdx = c.genes.map((_, i) => i);
+    const n = c.samples.length;
+    const bg = [...Array(n).keys()].map(j => bgIdx.map(i => L[i][j]).sort((a, b) => a - b));
+    const scores = {}, coverage = {};
+    for (const [name, def] of Object.entries(genesets)) {
+      const present = def.genes.filter(g => gi.has(g));
+      coverage[name] = { n: def.genes.length, present: present.length, missing: def.genes.filter(g => !gi.has(g)) };
+      scores[name] = c.samples.map((_, j) => {
+        if (!present.length) return NaN;
+        const ref = bg[j]; let s = 0;
+        for (const g of present) { const v = L[gi.get(g)][j]; s += (lowerBound(ref, v) + upperBound(ref, v)) / 2 / ref.length; }
+        return s / present.length - 0.5;
+      });
+    }
+    if (scores.da_identity && scores.off_target)
+      scores.fidelity = scores.da_identity.map((v, j) => v - scores.off_target[j]);
+    if (clock) {
+      coverage.age_clock = { n: clock.up.length + clock.down.length, present: ckUp.length + ckDown.length, missing: [] };
+      if (ckUp.length >= 0.8 * clock.up.length && ckDown.length >= 0.8 * clock.down.length) {
+        const ex = new Set([...programGenes, ...ckUp, ...ckDown]);
+        const bIdx = c.genes.map((g, i) => ex.has(g) ? -1 : i).filter(i => i >= 0);
+        const bg2 = [...Array(n).keys()].map(j => bIdx.map(i => L[i][j]).sort((a, b) => a - b));
+        const mr = (genes, j) => genes.reduce((s2, g) => { const v = L[gi.get(g)][j], r = bg2[j]; return s2 + (lowerBound(r, v) + upperBound(r, v)) / 2 / r.length; }, 0) / genes.length;
+        scores.age_clock = c.samples.map((_, j) => mr(ckUp, j) - mr(ckDown, j));
+      }
+    }
+    // validated progenitor-loss read-out: minus the program-style rank score of SOX2 + NES
+    if (gi.has("SOX2") && gi.has("NES")) {
+      const ref = bg;
+      scores.progenitor_loss = c.samples.map((_, j) => {
+        let s2 = 0; for (const g of ["SOX2", "NES"]) { const v = L[gi.get(g)][j]; s2 += (lowerBound(ref[j], v) + upperBound(ref[j], v)) / 2 / ref[j].length; }
+        return -(s2 / 2 - 0.5);
+      });
+    }
+    return { scores, coverage };
+  }
+
+  // Within-stratum (line|microglia) effects, test - ref, with a within-stratum permutation
+  // test and Benjamini-Hochberg q-values across programs (same logic as compare.py).
+  function stratifiedEffects(samples, scores, meta, ref, test, nPerm = 2000, seed = 1) {
+    const strata = {};
+    samples.forEach((s, j) => {
+      const m = meta.bySample[s]; if (!m || (m.condition !== ref && m.condition !== test)) return;
+      const key = [m.line, m.microglia].join("|");
+      (strata[key] = strata[key] || []).push({ j, c: m.condition });
+    });
+    const keys = Object.keys(strata), groups = keys.map(k => strata[k]);
+    const lineOf = keys.map(k => k.split("|")[0]);
+    let st = seed >>> 0; const rnd = () => ((st = (st * 1664525 + 1013904223) >>> 0) / 4294967296);
+    const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const k = Math.floor(rnd() * (i + 1)); [a[i], a[k]] = [a[k], a[i]]; } return a; };
+    function eff(vals, labels) {
+      let dsum = 0, w = 0, gsum = 0, wg = 0;
+      groups.forEach((members, gix) => {
+        const lab = labels[gix];
+        const a = members.filter((_, t) => lab[t] === ref).map(x => vals[x.j]);
+        const b = members.filter((_, t) => lab[t] === test).map(x => vals[x.j]);
+        if (!a.length || !b.length) return;
+        const ma = mean(a), mb = mean(b), n = a.length + b.length;
+        dsum += (mb - ma) * n; w += n;
+        if (a.length > 1 && b.length > 1) {
+          const sp = Math.sqrt(((a.length - 1) * vr(a) + (b.length - 1) * vr(b)) / (n - 2));
+          if (sp > 0) { const J = 1 - 3 / (4 * n - 9); gsum += J * (mb - ma) / sp * n; wg += n; }
+        }
+      });
+      return { diff: w ? dsum / w : NaN, g: wg ? gsum / wg : NaN };
+    }
+    const obsLabels = groups.map(m => m.map(x => x.c));
+    const permLabels = [...Array(nPerm)].map(() => obsLabels.map(shuffle));
+    const out = {};
+    for (const [prog, vals] of Object.entries(scores)) {
+      const o = eff(vals, obsLabels); let ext = 0, tot = 0;
+      for (const pl of permLabels) { const e = eff(vals, pl).g; if (isFinite(e)) { tot++; if (Math.abs(e) >= Math.abs(o.g) - 1e-12) ext++; } }
+      // direction must agree in every cell line
+      const perLine = {};
+      groups.forEach((members, gix) => {
+        const a = members.filter(x => x.c === ref).map(x => vals[x.j]);
+        const b = members.filter(x => x.c === test).map(x => vals[x.j]);
+        if (a.length && b.length) (perLine[lineOf[gix]] = perLine[lineOf[gix]] || []).push(mean(b) - mean(a));
+      });
+      const consistent = Object.values(perLine).every(d => Math.sign(mean(d)) === Math.sign(o.diff));
+      out[prog] = { ...o, p: (ext + 1) / (tot + 1), consistent };
+    }
+    const progs = Object.keys(out).sort((a, b) => out[b].p - out[a].p); let prev = 1;
+    progs.forEach((k, r) => { const rank = progs.length - r; prev = Math.min(prev, out[k].p * progs.length / rank); out[k].q = prev; });
+    return { effects: out, nStrata: groups.length };
+  }
+  const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+  const vr = a => { const m = mean(a); return a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1); };
+
+  const api = { parseCounts, parseMeta, logCPM, rankColumns, scoreAll, stratifiedEffects };
+  if (typeof module !== "undefined") module.exports = api; else root.MUGNT = api;
+})(this);
+</script>
+<script>
+const GS = {
+  "version": "0.1.0",
+  "fingerprint": "ce3ab2617ac2602c",
+  "genesets": {
+    "maturation": {
+      "role": "axis",
+      "description": "[v0.2: NOT VALIDATED as a maturity clock - failed Step A on Fiorenzano 2021 (rho = -0.16 whole organoid, 0.41 neurons only); kept as a descriptive synaptic-marker score. Use 'age_clock' (mug_neurotune/clock.py).] Pan-neuronal maturation: synaptic machinery, cytoskeleton of post-mitotic neurons, mature ion channels. Deliberately excludes dopaminergic genes so maturation and DA identity stay independent.",
+      "source": "Synaptic/neuronal maturation genes used to stage brain organoids (e.g. Gordon et al. 2021 Nat Neurosci; Bhaduri et al. 2020 Nature).",
+      "genes": [
+        "RBFOX3",
+        "SYP",
+        "SYN1",
+        "SNAP25",
+        "SYT1",
+        "SV2A",
+        "DLG4",
+        "STMN2",
+        "MAPT",
+        "NEFL",
+        "NEFM",
+        "GRIA2",
+        "SCN2A",
+        "KCNQ2",
+        "CACNA1A",
+        "ATP1A3",
+        "VAMP2",
+        "NRXN1"
+      ]
+    },
+    "da_identity": {
+      "role": "axis",
+      "description": "Midbrain dopaminergic identity: floor-plate lineage TFs and dopamine-synthesis/handling genes.",
+      "source": "Canonical mDA markers (Fiorenzano et al. 2021 Nat Commun; Birtele et al. 2022 Development; Marotta et al. 2024 reported TH, DDC).",
+      "genes": [
+        "TH",
+        "DDC",
+        "SLC6A3",
+        "SLC18A2",
+        "NR4A2",
+        "LMX1A",
+        "LMX1B",
+        "FOXA2",
+        "EN1",
+        "PITX3",
+        "KCNJ6",
+        "ALDH1A1"
+      ]
+    },
+    "off_target": {
+      "role": "fidelity_penalty",
+      "description": "Non-midbrain regional identity (forebrain, hindbrain). A rise means loss of lineage fidelity. Fidelity = da_identity - off_target.",
+      "source": "Regional patterning markers commonly used for organoid mis-specification checks (FOXG1/EMX/DLX forebrain; HOX/PHOX2B hindbrain).",
+      "genes": [
+        "FOXG1",
+        "EMX1",
+        "EMX2",
+        "DLX2",
+        "DLX5",
+        "HOXA2",
+        "HOXB2",
+        "PHOX2B"
+      ]
+    },
+    "progenitor_cycle": {
+      "role": "state",
+      "description": "Proliferation / progenitor state (expected to fall with maturation).",
+      "source": "Cell-cycle and neural-progenitor markers; Marotta et al. 2024 report lower VIM, SOX2, PAX6, CCND1 in LEO.",
+      "genes": [
+        "MKI67",
+        "TOP2A",
+        "CCNB1",
+        "CDK1",
+        "PCNA",
+        "MCM2",
+        "AURKB",
+        "SOX2",
+        "PAX6",
+        "VIM",
+        "NES",
+        "HES1",
+        "HES5",
+        "CCND1"
+      ]
+    },
+    "stress_glycolysis": {
+      "role": "dysregulation",
+      "description": "Glycolytic stress program characteristic of organoid stressed cells.",
+      "source": "Bhaduri et al. 2020 Nature (PGK1 as stress marker); Vertesy et al. 2022 EMBO J (Gruffi, glycolysis GO term).",
+      "genes": [
+        "PGK1",
+        "ENO1",
+        "LDHA",
+        "ALDOA",
+        "TPI1",
+        "PFKP",
+        "PKM",
+        "HK2",
+        "GPI"
+      ]
+    },
+    "stress_er": {
+      "role": "dysregulation",
+      "description": "ER stress / unfolded protein response.",
+      "source": "Bhaduri et al. 2020 (ARCN1, GORASP2); Vertesy et al. 2022 (ER stress GO).",
+      "genes": [
+        "ARCN1",
+        "GORASP2",
+        "DDIT3",
+        "ATF4",
+        "HSPA5",
+        "XBP1",
+        "HERPUD1",
+        "SEL1L",
+        "DNAJB9",
+        "PDIA4",
+        "ATF6"
+      ]
+    },
+    "hypoxia": {
+      "role": "dysregulation",
+      "description": "HIF-target hypoxia response. Glycolytic enzymes are EXCLUDED on purpose (they live in stress_glycolysis) so hypoxia is not counted twice.",
+      "source": "Canonical HIF targets (cf. MSigDB HALLMARK_HYPOXIA; Buffa et al. 2010 Br J Cancer hypoxia metagene).",
+      "genes": [
+        "VEGFA",
+        "SLC2A1",
+        "BNIP3",
+        "BNIP3L",
+        "PDK1",
+        "CA9",
+        "ADM",
+        "NDRG1",
+        "ANKRD37",
+        "EGLN3",
+        "P4HA1",
+        "P4HA2",
+        "ERO1A",
+        "DDIT4",
+        "BHLHE40",
+        "ANGPTL4",
+        "PFKFB3",
+        "PFKFB4",
+        "KDM3A",
+        "MXI1"
+      ]
+    },
+    "p53_dna_damage": {
+      "role": "dysregulation",
+      "description": "p53 / DNA-damage response (radiation is a LEO co-exposure).",
+      "source": "Canonical p53 targets; Marotta et al. 2024 report lower CDKN1A, GADD45A in LEO.",
+      "genes": [
+        "CDKN1A",
+        "GADD45A",
+        "MDM2",
+        "BAX",
+        "BBC3",
+        "TP53I3",
+        "SESN1",
+        "SESN2",
+        "FAS",
+        "RRM2B"
+      ]
+    },
+    "glial_reactive": {
+      "role": "dysregulation",
+      "description": "Astroglial / reactive glia shift.",
+      "source": "Astrocyte and reactive-astrocyte markers.",
+      "genes": [
+        "GFAP",
+        "AQP4",
+        "S100B",
+        "SLC1A3",
+        "SOX9",
+        "SERPINA3",
+        "CHI3L1",
+        "LCN2",
+        "C3"
+      ]
+    },
+    "microglia_qc": {
+      "role": "qc",
+      "description": "Confirms microglia presence; NOT a dysregulation program.",
+      "source": "Microglia identity markers.",
+      "genes": [
+        "AIF1",
+        "P2RY12",
+        "CX3CR1",
+        "TMEM119",
+        "C1QA",
+        "PTPRC",
+        "CSF1R"
+      ]
+    }
+  }
+};
+const CLOCK = {"up": ["PTN", "BEX5", "MEG3", "GPM6A", "CDC42", "TMEM14A", "TUBB2A", "PEG10", "CHD5", "ATP1B1", "FTH1", "SEC62", "GTF2H5", "ABCA5", "NTRK2", "HMGN3", "PPP3CA", "STRN3", "LAPTM4A", "ZNF428", "IRF2BPL", "RTN1", "NREP", "TSPAN7", "SOX11", "SNCA", "CNTN1", "TCF4", "GPM6B", "GUK1", "GOLGA8B", "PNCK", "BEX2", "C1orf56", "CAPZA2", "NTM", "MAP1LC3A", "TMEM161B-AS1", "DAAM1", "BEX1", "CD47", "FXYD6", "ZFAND6", "LRFN5", "PRNP", "NDUFC2", "TNRC6B", "LINC00632", "YWHAQ", "SERPINE2"], "down": ["ACTG1", "RBP1", "EEF1A1", "NACA", "TAGLN3", "NONO", "TMEM97", "ACAT2", "RBMX", "FDFT1", "TPT1", "NR2F1", "KPNA2", "NAP1L1", "GAPDH", "NHLH2", "EIF3L", "NELL2", "MRPL51", "TUBB", "HMGB2", "HNRNPA1", "ZFAS1", "RAN", "PCBP4", "PHF21B", "CNTN2", "PAFAH1B3", "DDAH2", "GNG5", "SSR4", "MIB1", "EIF3H", "SLC25A5", "FKBP3", "RPLP0", "RHOA", "EIF3K", "RPSA", "LDHB", "CCT7", "C3orf58", "ARL4A", "CSDE1", "SMARCE1", "CCT2", "PRDX6", "CBX3", "PSMD4", "SRSF7"], "aliases": {"ATP5MPL": "ATP5MJ", "ATP5MD": "ATP5MK", "H3F3A": "H3-3A", "ATP5ME": "ATP5ME", "C1orf61": "CROC4"}};
+const SETS = GS.genesets;
+const KEY = ["age_clock","progenitor_loss","maturation","da_identity","fidelity","progenitor_cycle","stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive","off_target","microglia_qc"];
+const PRETTY = {age_clock:"Age clock v0.3 ✓",progenitor_loss:"Progenitor loss ✓",maturation:"Synaptic markers",da_identity:"DA identity",fidelity:"Fidelity",progenitor_cycle:"Progenitor / cycle",stress_glycolysis:"Glycolytic stress",stress_er:"ER stress",hypoxia:"Hypoxia",p53_dna_damage:"p53 / DNA damage",glial_reactive:"Reactive glia",off_target:"Off-target region",microglia_qc:"Microglia (QC)"};
+let countsText=null, metaText=null, last=null;
+document.getElementById("gsBadge").textContent=`gene sets v${GS.version} · ${GS.fingerprint}`;
+document.getElementById("gsList").innerHTML=Object.entries(SETS).map(([k,v])=>`<p><b>${k}</b> (${v.role}) — ${v.genes.join(", ")}<br><span class="note">${v.source}</span></p>`).join("");
+
+function wire(dropId,fileId,setter){
+  const d=document.getElementById(dropId), f=document.getElementById(fileId);
+  d.onclick=()=>f.click();
+  d.ondragover=e=>{e.preventDefault();d.classList.add("over")};
+  d.ondragleave=()=>d.classList.remove("over");
+  const take=file=>file.text().then(t=>{setter(t);d.classList.add("done");d.querySelector("small").textContent=file.name;ready();});
+  d.ondrop=e=>{e.preventDefault();d.classList.remove("over");if(e.dataTransfer.files[0])take(e.dataTransfer.files[0]);};
+  f.onchange=()=>f.files[0]&&take(f.files[0]);
+}
+wire("dropCounts","fileCounts",t=>countsText=t);
+wire("dropMeta","fileMeta",t=>metaText=t);
+function ready(){document.getElementById("runBtn").disabled=!countsText;}
+document.getElementById("demoBtn").onclick=async()=>{
+  const st=document.getElementById("status"); st.textContent="Loading NASA ISS organoid data…";
+  try{
+    const [a,b]=await Promise.all([fetch("iss_DA_counts.csv"),fetch("iss_DA_meta.csv")]);
+    if(!a.ok||!b.ok) throw new Error("demo files not found");
+    countsText=await a.text(); metaText=await b.text();
+    for(const [id,n] of [["dropCounts","GSE259421 · 18 dopaminergic organoids"],["dropMeta","ISS vs ground · 2 lines · ±microglia"]]){const d=document.getElementById(id);d.classList.add("done");d.querySelector("small").textContent=n;}
+    ready();run();
+  }catch(e){st.innerHTML=`<span class="err">Could not load the demo data (${e.message}).</span>`;}
+};
+document.getElementById("runBtn").onclick=run;
+
+function run(){
+  const st=document.getElementById("status");
+  try{
+    const c=MUGNT.parseCounts(countsText);
+    if(c.samples.length<2||c.genes.length<200) throw new Error(`Found ${c.genes.length} genes × ${c.samples.length} samples. Need ≥200 genes and ≥2 samples (genes in rows).`);
+    const {scores,coverage}=MUGNT.scoreAll(c,SETS,CLOCK);
+    const meta=metaText?MUGNT.parseMeta(metaText):null;
+    last={c,scores,coverage,meta};
+    st.textContent=`Scored ${c.samples.length} samples over ${c.genes.length.toLocaleString()} genes.`;
+    render();
+  }catch(e){st.innerHTML=`<span class="err">${e.message}</span>`;}
+}
+
+function fmt(x,d=3){return isFinite(x)?x.toFixed(d):"–"}
+
+function render(){
+  const {c,scores,coverage,meta}=last;
+  document.getElementById("results").classList.remove("hidden");
+  // coverage
+  document.getElementById("coverage").innerHTML=Object.entries(coverage).map(([k,v])=>{
+    const f=v.present/v.n;return `<span class="chip ${f<.6?"low":""}" title="missing: ${v.missing.join(", ")||"none"}">${PRETTY[k]||k} ${v.present}/${v.n}</span>`}).join("");
+  // table
+  const cols=KEY.filter(k=>scores[k]);
+  const metaCols=meta?["condition","line","microglia"].filter(x=>meta.columns.includes(x)):[];
+  let h="<tr><th>sample</th>"+metaCols.map(m=>`<th>${m}</th>`).join("")+cols.map(k=>`<th>${PRETTY[k]}</th>`).join("")+"</tr>";
+  c.samples.forEach((s,j)=>{h+=`<tr><td class="mono">${s}</td>`+metaCols.map(m=>`<td>${meta.bySample[s]?.[m]??""}</td>`).join("")+cols.map(k=>{const v=scores[k][j];const a=Math.min(Math.abs(v)/0.25,1);const col=v>=0?`rgba(29,78,216,${a*.22})`:`rgba(100,116,139,${a*.25})`;return `<td class="mono" style="background:${col}">${fmt(v)}</td>`}).join("")+"</tr>";});
+  document.getElementById("scoreTable").innerHTML=h;
+  // effects + verdict
+  const ref=document.getElementById("refC").value.trim(), test=document.getElementById("testC").value.trim();
+  let eff=null;
+  if(meta&&meta.columns.includes("condition")){
+    if(!meta.columns.includes("line")) c.samples.forEach(s=>meta.bySample[s]&&(meta.bySample[s].line=meta.bySample[s].line||"all"));
+    eff=MUGNT.stratifiedEffects(c.samples,scores,meta,ref,test);
+  }
+  renderEffects(eff,ref,test); renderVerdict(eff); renderMap(meta,ref,test);
+}
+
+function renderEffects(eff,ref,test){
+  const box=document.getElementById("effects");
+  if(!eff){box.innerHTML=`<p class="note">Add metadata with a <span class="mono">condition</span> column to compare ${ref} vs ${test}.</p>`;return;}
+  const rows=KEY.filter(k=>eff.effects[k]&&k!=="microglia_qc");
+  const maxg=Math.max(1.5,...rows.map(k=>Math.abs(eff.effects[k].g)||0));
+  box.innerHTML=`<table>${rows.map(k=>{const g=eff.effects[k].g;const w=Math.abs(g)/maxg*110;const col=g>=0?"var(--leo)":"var(--gnd)";
+    return `<tr><td>${PRETTY[k]}</td><td style="width:240px;text-align:left"><span style="display:inline-block;width:120px;text-align:right">${g<0?`<span class="bar" style="width:${w}px;background:${col}"></span>`:""}</span><span style="display:inline-block;width:1px;height:14px;background:#999;vertical-align:middle"></span>${g>=0?`<span class="bar" style="width:${w}px;background:${col}"></span>`:""}</td><td class="mono">${fmt(g,2)}</td><td class="mono" style="color:${eff.effects[k].q<0.05?"#1c2230":"#a3a9b4"}">q ${fmt(eff.effects[k].q,3)}</td></tr>`}).join("")}</table><p class="note">${eff.nStrata} strata · ${test} vs ${ref}</p>`;
+}
+
+function classify(e){
+  const up=k=>e[k]&&e[k].g>=0.5&&e[k].q<0.05&&e[k].consistent, down=k=>e[k]&&e[k].g<=-0.5&&e[k].q<0.05&&e[k].consistent;
+  const panel=["age_clock","progenitor_loss"].filter(k=>e[k]&&isFinite(e[k].g));
+  const nUp=panel.filter(up).length, nDown=panel.filter(down).length;
+  if(panel.length===2&&nUp&&nDown) return ["Inconsistent read-outs","t-mixed","The two validated maturity read-outs disagree (one up, one down)."];
+  const axis=panel.length===2?"panel":"maturation";
+  const upAxis=k=>k==="panel"?(nUp===2):up(k);
+  const dys=["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(up);
+  if(!upAxis(axis)) return ["Insufficient evidence","t-ins",`No robust maturation increase: ${axis==="panel"?`${nUp} of 2 validated read-outs up (both must agree)`:"validated read-outs unavailable (clock genes missing), v0.1 marker score used"}.`+(["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).length?` Changed programs: ${["stress_glycolysis","stress_er","hypoxia","p53_dna_damage","glial_reactive"].filter(k=>up(k)||down(k)).map(k=>PRETTY[k]+(up(k)?" ↑":" ↓")).join(", ")}.`:"")];
+  if(down("da_identity")||down("fidelity")) return ["Dysregulated state","t-dys","Maturation goes up, but dopaminergic identity / fidelity goes down."];
+  if(dys.length) return ["Mixed state","t-mixed",`Maturation goes up <b>together with</b> ${dys.map(d=>PRETTY[d]).join(", ")}. Part of the "maturation" may be a stress or oxygen-limitation response: run the hypoxia-adjusted test.`];
+  return ["Promising maturation","t-prom","Maturation up, dopaminergic identity preserved, no stress program up."];
+}
+function renderVerdict(eff){
+  const v=document.getElementById("verdict");
+  if(!eff){v.innerHTML=`<span class="verdict tag t-ins">No comparison</span><div>Scores are shown per sample below. Add metadata to get a verdict.</div>`;return;}
+  const [label,cls,why]=classify(eff.effects);
+  v.innerHTML=`<span class="tag ${cls}">${label}</span><div><div>${why}</div><div class="note" style="margin-top:6px">A program counts as changed only if |g| ≥ 0.5, q &lt; 0.05 and the direction agrees in every cell line. Confirm with the Python package (adds bootstrap CIs and the hypoxia-adjusted test).</div></div>`;
+}
+
+function renderMap(meta,ref,test){
+  const {c,scores}=last, W=560,H=420,P={l:64,r:20,t:20,b:48};
+  const xs=scores.age_clock||scores.maturation, ys=scores.fidelity, hy=scores.hypoxia||xs.map(()=>0);
+  const ext=a=>{const f=a.filter(isFinite);const lo=Math.min(...f),hi=Math.max(...f),pad=(hi-lo||.1)*.12;return [lo-pad,hi+pad]};
+  const [x0,x1]=ext(xs),[y0,y1]=ext(ys),[h0,h1]=[Math.min(...hy.filter(isFinite)),Math.max(...hy.filter(isFinite))];
+  const X=v=>P.l+(v-x0)/(x1-x0)*(W-P.l-P.r), Y=v=>H-P.b-(v-y0)/(y1-y0)*(H-P.t-P.b);
+  const fill=v=>{const t=h1>h0?(v-h0)/(h1-h0):0;const a=[254,237,222],b=[194,65,12];return `rgb(${a.map((x,i)=>Math.round(x+(b[i]-x)*t)).join(",")})`};
+  const lines=meta?[...new Set(c.samples.map(s=>meta.bySample[s]?.line||"all"))]:["all"];
+  const shape=(l,x,y)=>{const i=lines.indexOf(l)%3;return i===0?`<circle cx="${x}" cy="${y}" r="7"`:i===1?`<rect x="${x-6.5}" y="${y-6.5}" width="13" height="13"`:`<path d="M${x},${y-8}L${x+8},${y+6}L${x-8},${y+6}Z"`};
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Maturation versus fidelity map">`;
+  for(let i=0;i<=4;i++){const yv=y0+(y1-y0)*i/4,xv=x0+(x1-x0)*i/4;
+    s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="#eee"/><text x="${P.l-8}" y="${Y(yv)+4}" font-size="13" text-anchor="end" fill="#5b6474">${yv.toFixed(Math.abs(y1-y0)<0.1?3:2)}</text>`;
+    s+=`<text x="${X(xv)}" y="${H-P.b+18}" font-size="13" text-anchor="middle" fill="#5b6474">${xv.toFixed(Math.abs(x1-x0)<0.1?3:2)}</text>`;}
+  s+=`<text x="${(W+P.l)/2}" y="${H-8}" font-size="14" text-anchor="middle" fill="#1c2230">${scores.age_clock?"Neuronal age clock":"Maturation score"} →</text><text transform="translate(14 ${(H-P.b)/2}) rotate(-90)" font-size="14" text-anchor="middle" fill="#1c2230">Dopaminergic fidelity →</text>`;
+  c.samples.forEach((sm,j)=>{const m=meta?.bySample[sm]||{};const cond=m.condition;const stroke=cond===test?"#1d4ed8":cond===ref?"#64748b":"#1c2230";
+    s+=`${shape(m.line||"all",X(xs[j]),Y(ys[j]))} fill="${fill(hy[j])}" stroke="${stroke}" stroke-width="2.4"><title>${sm} · ${cond||""} · ${m.line||""} ${m.microglia||""}\nmaturation ${fmt(xs[j])} · fidelity ${fmt(ys[j])} · hypoxia ${fmt(hy[j])}</title></${shape(m.line||"all",0,0).match(/<(\w+)/)[1]}>`;});
+  if(meta){for(const [cond,col] of [[ref,"#64748b"],[test,"#1d4ed8"]]){const idx=c.samples.map((sm,j)=>meta.bySample[sm]?.condition===cond?j:-1).filter(j=>j>=0);if(!idx.length)continue;
+    const mx=idx.reduce((a,j)=>a+xs[j],0)/idx.length,my=idx.reduce((a,j)=>a+ys[j],0)/idx.length;
+    s+=`<path d="M${X(mx)-7},${Y(my)-7}L${X(mx)+7},${Y(my)+7}M${X(mx)+7},${Y(my)-7}L${X(mx)-7},${Y(my)+7}" stroke="${col}" stroke-width="3.5"/><text x="${X(mx)+10}" y="${Y(my)-8}" font-size="14" font-weight="700" fill="${col}" stroke="#fff" stroke-width="4" paint-order="stroke">${cond} mean</text>`;}}
+  s+=`</svg><div class="row note" style="margin-top:6px;gap:16px"><span>outline: <b style="color:#1d4ed8">${test}</b> / <b style="color:#64748b">${ref}</b></span><span>fill: hypoxia <span class="bar" style="width:70px;background:linear-gradient(90deg,rgb(254,237,222),rgb(194,65,12))"></span> low → high</span><span>shape: ${lines.map((l,i)=>["●","■","▲"][i%3]+" "+l).join(" · ")}</span></div>`;
+  document.getElementById("map").innerHTML=s;
+}
+
+document.getElementById("copyBtn").onclick=async()=>{
+  if(!last)return;const cols=KEY.filter(k=>last.scores[k]);
+  const csv=["sample,"+cols.join(",")].concat(last.c.samples.map((s,j)=>s+","+cols.map(k=>last.scores[k][j]).join(","))).join("\n");
+  try{await navigator.clipboard.writeText(csv);document.getElementById("copyBtn").textContent="Copied ✓";}catch(e){document.getElementById("copyBtn").textContent="Copy blocked: select table manually";}
+};
+</script>
+</body>
+</html>
